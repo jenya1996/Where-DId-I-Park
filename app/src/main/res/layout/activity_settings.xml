@@ -7,4 +7,27 @@
     android:layout_height="match_parent"
     tools:context=".settingsActivity">
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        tools:layout_editor_absoluteX="1dp"
+        tools:layout_editor_absoluteY="1dp">
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="range" />
+
+<!--        <EditText-->
+<!--            android:id="@+id/editTextText"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_weight="1"-->
+<!--            android:ems="10"-->
+<!--            android:inputType="text"-->
+<!--            android:text="Name" />-->
+    </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
