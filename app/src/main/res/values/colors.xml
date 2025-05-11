@@ -5,4 +5,5 @@
     <color name="secondaryColor">#03DAC6</color>
     <color name="backgroundColor">#FFFFFF</color>
     <color name="textColor">#000000</color>
+    <color name="my_splash_background">#FFFFFF</color>
 </resources>
