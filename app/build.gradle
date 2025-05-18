@@ -8,6 +8,19 @@ configurations.all {
         }
     }
 }
+def GOOGLE_API_KEY = project.hasProperty("GOOGLE_API_KEY") ? project.GOOGLE_API_KEY : ""
+allprojects {
+    // Required: you must exclude the Google Play service Maps SDK from
+    // your transitive dependencies. This is to ensure there won't be
+    // multiple copies of Google Maps SDK in your binary, as the Navigation
+    // SDK already bundles the Google Maps SDK.
+    configurations {
+        implementation {
+            exclude group: 'com.google.android.gms', module: 'play-services-maps'
+        }
+    }
+}
+
 android {
     namespace 'com.EvgeniG_EladO_HalelF.myapplication'
     compileSdk 35
@@ -20,6 +33,8 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+
     }
 
     buildTypes {
@@ -43,7 +58,9 @@ android {
 dependencies {
     // Google Navigation SDK (requires billing enabled in GCP)
 //    implementation 'com.google.android.libraries.navigation:navigation:6.0.0'
-    implementation 'com.google.android.gms:play-services-maps:18.2.0'
+//    implementation 'com.google.android.gms:play-services-maps:18.2.0'
+    implementation 'com.google.android.libraries.navigation:navigation:6.2.2'
+//    implementation 'com.google.maps.android:android-maps-utils:2.3.0'
 
 
     // Standard AndroidX dependencies
