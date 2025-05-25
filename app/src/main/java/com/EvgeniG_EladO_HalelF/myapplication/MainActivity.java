@@ -2,6 +2,8 @@ package com.EvgeniG_EladO_HalelF.myapplication;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -15,8 +17,25 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main); // Uses XML layout
 
         // Set text in TextView
-        TextView textView = findViewById(R.id.textView);
-        textView.setText("MainActivity loaded successfully");
+//        TextView textView = findViewById(R.id.textView);
+//        textView.setText("MainActivity loaded successfully");
+
+        Spinner locationSpinner = findViewById(R.id.location_spinner);
+
+// Fake location names
+        String[] locationNames = {
+                "Tel Aviv - Azrieli",
+                "Jerusalem - Central Station",
+                "Haifa - Carmel Beach",
+                "Be'er Sheva - University",
+                "Ramat Gan - Safari"
+        };
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                this, android.R.layout.simple_spinner_item, locationNames
+        );
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        locationSpinner.setAdapter(adapter);
 
         // Setup Bottom Navigation
         BottomNavigationView nav = findViewById(R.id.bottom_navigation);
