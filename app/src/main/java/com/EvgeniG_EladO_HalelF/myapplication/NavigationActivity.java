@@ -1,11 +1,9 @@
 package com.EvgeniG_EladO_HalelF.myapplication;
-import com.EvgeniG_EladO_HalelF.myapplication.PolylineDecoder;
 
 import android.os.Bundle;
 import android.graphics.Color;
 import android.Manifest;
 import android.content.pm.PackageManager;
-import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -15,7 +13,6 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.core.content.ContextCompat;
-import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -23,7 +20,6 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.maps.GoogleMap.CameraPerspective;
-import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 
 import com.google.android.libraries.navigation.ListenableResultFuture;
@@ -41,20 +37,16 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.FutureTask;
-
 
 public class NavigationActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
-
     private static final String TAG = MainActivity.class.getSimpleName();
     private Navigator mNavigator;
     private SupportNavigationFragment mNavFragment;
     private RoutingOptions mRoutingOptions;
     private boolean locationPermissionGranted = false;
-    private String apiKey = "AIzaSyBMkFPXxULLdgu1pU3RDHdvoZIvzMs81XM";
+    final private String apiKey = "AIzaSyBMkFPXxULLdgu1pU3RDHdvoZIvzMs81XM";
 
     private LatLng jerusalem = new LatLng(31.7683, 35.2137);
     private LatLng telAviv = new LatLng(32.0853, 34.7818);
@@ -68,7 +60,6 @@ public class NavigationActivity extends FragmentActivity implements OnMapReadyCa
                     displayMessage("Location permission denied.");
                 }
             });
-
 
     void createRoute(LatLng start, LatLng destination){
         mMap.addMarker(new MarkerOptions().position(start).title("start"));
@@ -164,12 +155,9 @@ public class NavigationActivity extends FragmentActivity implements OnMapReadyCa
                         googleMap.followMyLocation(CameraPerspective.TILTED));
 
                 mRoutingOptions = new RoutingOptions();
-                mRoutingOptions.travelMode(RoutingOptions.TravelMode.DRIVING);
+                mRoutingOptions.travelMode(RoutingOptions.TravelMode.CYCLING);
 
-//                String placeID = getPlaceIdFromCoordinates(31.7683,35.2137 , apiKey);
-                String placeID = "ChIJ3S-JXmauEmsRUcIaWtf4MzE";
-
-                navigateToPlace(placeID, mRoutingOptions);
+                navigateToPlace(telAviv, mRoutingOptions);
             }
 
             @Override
@@ -181,9 +169,6 @@ public class NavigationActivity extends FragmentActivity implements OnMapReadyCa
                     case NavigationApi.ErrorCode.TERMS_NOT_ACCEPTED:
                         displayMessage("Error: Terms of use not accepted.");
                         break;
-                    case NavigationApi.ErrorCode.NETWORK_ERROR:
-                        displayMessage("Error: Network issue.");
-                        break;
                     case NavigationApi.ErrorCode.LOCATION_PERMISSION_MISSING:
                         displayMessage("Error: Location permission missing.");
                         break;
@@ -194,12 +179,15 @@ public class NavigationActivity extends FragmentActivity implements OnMapReadyCa
         });
     }
 
-    private void navigateToPlace(String placeId, RoutingOptions travelMode) {
+    private void navigateToPlace(LatLng location, RoutingOptions travelMode) {
         Waypoint destination;
         try {
-            destination = Waypoint.builder().setPlaceIdString(placeId).build();
-        } catch (Waypoint.UnsupportedPlaceIdException e) {
-            displayMessage("Invalid place ID.");
+//            displayMessage("[INFO] - location =[" + location + "]");
+            destination = Waypoint.builder().setLatLng(location.latitude, location.longitude).build();
+            displayMessage("[INFO] - destination =[" + destination + "]");
+
+        } catch (IllegalArgumentException e) {
+            displayMessage("Invalid LatLng");
             return;
         }
 
@@ -207,6 +195,7 @@ public class NavigationActivity extends FragmentActivity implements OnMapReadyCa
                 mNavigator.setDestination(destination, travelMode);
 
         pendingRoute.setOnResultListener(result -> {
+
             switch (result) {
                 case OK:
                     if (getActionBar() != null) {
@@ -234,53 +223,6 @@ public class NavigationActivity extends FragmentActivity implements OnMapReadyCa
             }
         });
     }
-
-
-
-    public String getPlaceIdFromCoordinates(double lat, double lng, String apiKey) {
-        Callable<String> task = () -> {
-            try {
-                String urlStr = String.format(
-                        "https://maps.googleapis.com/maps/api/geocode/json?latlng=%f,%f&key=%s",
-                        lat, lng, apiKey);
-
-                URL url = new URL(urlStr);
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.connect();
-
-                BufferedReader reader = new BufferedReader(
-                        new InputStreamReader(conn.getInputStream()));
-                StringBuilder result = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) result.append(line);
-
-                JSONObject json = new JSONObject(result.toString());
-                if (json.getString("status").equals("OK")) {
-                    return json.getJSONArray("results")
-                            .getJSONObject(0)
-                            .getString("place_id");
-                } else {
-                    return null;
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                return null;
-            }
-        };
-
-        FutureTask<String> future = new FutureTask<>(task);
-        Thread thread = new Thread(future);
-        thread.start();
-
-        try {
-            return future.get(); // Wait for the thread to finish and return the result
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-
 
     private void displayMessage(String msg) {
         Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
