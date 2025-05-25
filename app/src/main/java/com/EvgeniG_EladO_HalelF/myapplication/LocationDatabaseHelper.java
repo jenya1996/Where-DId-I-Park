@@ -7,6 +7,8 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.location.Location;
 
+import com.google.android.gms.maps.model.LatLng;
+
 public class LocationDatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "locationDB";
@@ -44,6 +46,10 @@ public class LocationDatabaseHelper extends SQLiteOpenHelper {
         db.close();
     }
 
+    public void insertLocation(LatLng location){
+        insertLocation(location.latitude, location.longitude);
+    }
+
     public Location getLastLocation() {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery(
@@ -63,6 +69,10 @@ public class LocationDatabaseHelper extends SQLiteOpenHelper {
         cursor.close();
         db.close();
         return location;
+    }
+    public LatLng getLastLatLng(){
+        Location loc = getLastLocation();
+        return new LatLng(loc.getLatitude(), loc.getLongitude());
     }
 
 

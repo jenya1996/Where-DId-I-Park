@@ -50,7 +50,7 @@ public class NavigationActivity extends FragmentActivity implements OnMapReadyCa
 
     private LatLng jerusalem = new LatLng(31.7683, 35.2137);
     private LatLng telAviv = new LatLng(32.0853, 34.7818);
-
+//    private LocationDatabaseHelper locationDB = new LocationDatabaseHelper(this);
     private final ActivityResultLauncher<String> locationPermissionRequest =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
                 locationPermissionGranted = isGranted;
@@ -110,8 +110,15 @@ public class NavigationActivity extends FragmentActivity implements OnMapReadyCa
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigation);
+
+//        locationDB.insertLocation(11.2222, 33.4444);
+//        locationDB.insertLocation(telAviv);
+
+
+        //this the is where the navigation code starts
         checkLocationPermissionAndInitialize();
 
 //        SupportMapFragment mapFragment = (SupportMapFragment)
@@ -155,7 +162,9 @@ public class NavigationActivity extends FragmentActivity implements OnMapReadyCa
                         googleMap.followMyLocation(CameraPerspective.TILTED));
 
                 mRoutingOptions = new RoutingOptions();
-                mRoutingOptions.travelMode(RoutingOptions.TravelMode.CYCLING);
+                mRoutingOptions.travelMode(RoutingOptions.TravelMode.DRIVING);
+
+//                LatLng placeToNav = locationDB.getLastLatLng();
 
                 navigateToPlace(telAviv, mRoutingOptions);
             }
@@ -182,9 +191,7 @@ public class NavigationActivity extends FragmentActivity implements OnMapReadyCa
     private void navigateToPlace(LatLng location, RoutingOptions travelMode) {
         Waypoint destination;
         try {
-//            displayMessage("[INFO] - location =[" + location + "]");
             destination = Waypoint.builder().setLatLng(location.latitude, location.longitude).build();
-            displayMessage("[INFO] - destination =[" + destination + "]");
 
         } catch (IllegalArgumentException e) {
             displayMessage("Invalid LatLng");
