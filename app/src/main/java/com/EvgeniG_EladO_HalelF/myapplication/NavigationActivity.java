@@ -1,6 +1,7 @@
 package com.EvgeniG_EladO_HalelF.myapplication;
 import com.EvgeniG_EladO_HalelF.myapplication.PolylineDecoder;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -27,6 +28,7 @@ import android.graphics.Color;
 //import com.google.android.gms.maps.model.LatLng;
 //import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 //import org.json.JSONArray;
 import org.json.JSONObject;
@@ -55,6 +57,26 @@ public class NavigationActivity extends FragmentActivity implements OnMapReadyCa
         if (mapFragment != null) {
             mapFragment.getMapAsync(this);
         }
+
+        // Setup Bottom Navigation
+        BottomNavigationView nav = findViewById(R.id.bottom_navigation);
+        nav.setSelectedItemId(R.id.nav_map); // Mark current tab as selected
+
+        nav.setOnItemSelectedListener(item -> {
+            int itemId = item.getItemId();
+            if (itemId == R.id.nav_home) {
+                startActivity(new Intent(this, MainActivity.class));
+                overridePendingTransition(0, 0);
+                return true;
+            } else if (itemId == R.id.nav_map) {
+                return true; // Already here
+            } else if (itemId == R.id.nav_settings) {
+                startActivity(new Intent(this, SettingsActivity.class));
+                overridePendingTransition(0, 0);
+                return true;
+            }
+            return false;
+        });
     }
 
     @Override
