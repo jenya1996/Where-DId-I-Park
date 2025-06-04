@@ -17,6 +17,7 @@ import androidx.core.content.ContextCompat;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.gms.maps.model.LatLng;
 
@@ -41,6 +42,27 @@ public class MainActivity extends AppCompatActivity {
         Button navigateButton = findViewById(R.id.navigate_button);
         dbHelper = new LocationDatabaseHelper(this);
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map_fragment);
+
+        if (mapFragment != null) {
+            mapFragment.getMapAsync(googleMap -> {
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    return;
+                }
+                googleMap.setMyLocationEnabled(true);
+
+                fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
+                    if (location != null) {
+                        LatLng current = new LatLng(location.getLatitude(), location.getLongitude());
+                        googleMap.moveCamera(com.google.android.gms.maps.CameraUpdateFactory.newLatLngZoom(current, 15f));
+                    }
+                });
+            });
+        }
+
 
         checkLocationPermission();
 
