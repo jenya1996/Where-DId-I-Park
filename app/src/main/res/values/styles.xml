@@ -1,0 +1,7 @@
+<resources>
+    <!-- Nav Bar Icons Size -->
+    <style name="BottomNavStyle" parent="Widget.MaterialComponents.BottomNavigationView">
+        <item name="itemIconSize">100dp</item>
+    </style>
+
+</resources>
