@@ -6,4 +6,13 @@
     <string name="next">Next</string>
     <string name="previous">Previous</string>
     <string name="logo">Logo</string>
+
+<!-- Notification Settings -->
+<string name="select_sound">Select Sound</string>
+<string name="current_sound_label">Current: %1$s</string>
+<string name="default_sound">Default</string>
+<string name="reminder_channel">Reminders</string>
+<string name="channel_description">Notifications for reminders</string>
+<string name="test_notification_title">Test Notification</string>
+<string name="test_notification_message">This is a test with your selected sound.</string>
 </resources>
