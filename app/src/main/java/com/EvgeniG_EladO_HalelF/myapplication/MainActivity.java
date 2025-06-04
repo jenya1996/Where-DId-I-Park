@@ -22,7 +22,7 @@ public class MainActivity extends AppCompatActivity {
 
         Spinner locationSpinner = findViewById(R.id.location_spinner);
 
-// Fake location names
+        // placeholder location names
         String[] locationNames = {
                 "Tel Aviv - Azrieli",
                 "Jerusalem - Central Station",
