@@ -12,11 +12,13 @@ import com.google.android.gms.maps.model.LatLng;
 public class LocationDatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "locationDB";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
     private static final String TABLE_NAME = "locations";
     private static final String COL_ID = "id";
     private static final String COL_LAT = "latitude";
     private static final String COL_LNG = "longitude";
+    private static final String COL_LABEL = "label"; // New column
+
 
     public LocationDatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -27,15 +29,24 @@ public class LocationDatabaseHelper extends SQLiteOpenHelper {
         String CREATE_TABLE = "CREATE TABLE " + TABLE_NAME + " (" +
                 COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 COL_LAT + " REAL, " +
-                COL_LNG + " REAL)";
+                COL_LNG + " REAL, " +
+                COL_LABEL + " TEXT)";
         db.execSQL(CREATE_TABLE);
     }
 
+//    @Override
+//    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+//        db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
+//        onCreate(db);
+//    }
+
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
-        onCreate(db);
+        if (oldVersion < 2) {
+            db.execSQL("ALTER TABLE " + TABLE_NAME + " ADD COLUMN " + COL_LABEL + " TEXT");
+        }
     }
+
 
     public void insertLocation(double lat, double lng) {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -80,5 +91,14 @@ public class LocationDatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
         return db.rawQuery("SELECT * FROM " + TABLE_NAME, null);
     }
-}
 
+    public void insertLocationWithLabel(double lat, double lng, String label) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COL_LAT, lat);
+        values.put(COL_LNG, lng);
+        values.put(COL_LABEL, label);
+        db.insert(TABLE_NAME, null, values);
+        db.close();
+    }
+}

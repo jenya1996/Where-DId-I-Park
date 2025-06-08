@@ -94,24 +94,24 @@ public class NavigationActivity extends FragmentActivity implements OnMapReadyCa
 
 
 
-        BottomNavigationView nav = findViewById(R.id.bottom_navigation);
-        nav.setSelectedItemId(R.id.nav_map);
-        nav.setOnItemSelectedListener(item -> {
-            int itemId = item.getItemId();
-            if (itemId == R.id.nav_home) {
-                startActivity(new Intent(this, MainActivity.class));
-                overridePendingTransition(0, 0);
-                return true;
-            } else if (itemId == R.id.nav_map) {
-                return true; // Already on this screen
-            } else if (itemId == R.id.nav_settings) {
-                startActivity(new Intent(this, SettingsActivity.class));
-                overridePendingTransition(0, 0);
-                return true;
-            }
-            return false;
-
-        });
+//        BottomNavigationView nav = findViewById(R.id.bottom_navigation);
+//        nav.setSelectedItemId(R.id.nav_map);
+//        nav.setOnItemSelectedListener(item -> {
+//            int itemId = item.getItemId();
+//            if (itemId == R.id.nav_home) {
+//                startActivity(new Intent(this, MainActivity.class));
+//                overridePendingTransition(0, 0);
+//                return true;
+//            } else if (itemId == R.id.nav_map) {
+//                return true; // Already on this screen
+//            } else if (itemId == R.id.nav_settings) {
+//                startActivity(new Intent(this, SettingsActivity.class));
+//                overridePendingTransition(0, 0);
+//                return true;
+//            }
+//            return false;
+//
+//        });
     }
 
     @Override
