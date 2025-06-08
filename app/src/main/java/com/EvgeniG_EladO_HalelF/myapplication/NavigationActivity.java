@@ -15,11 +15,9 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.core.content.ContextCompat;
 
-import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.PolylineOptions;
+
 import com.google.android.gms.maps.GoogleMap.CameraPerspective;
 import com.google.android.gms.maps.model.LatLng;
 
@@ -47,12 +45,11 @@ public class NavigationActivity extends FragmentActivity implements OnMapReadyCa
     private Navigator mNavigator;
     private SupportNavigationFragment mNavFragment;
     private RoutingOptions mRoutingOptions;
-    private boolean locationPermissionGranted = false;
-    final private String apiKey = "AIzaSyBMkFPXxULLdgu1pU3RDHdvoZIvzMs81XM";
+    private boolean locationPermissionGranted = true;
 
     private LatLng jerusalem = new LatLng(31.7683, 35.2137);
     private LatLng telAviv = new LatLng(32.0853, 34.7818);
-//    private LocationDatabaseHelper locationDB = new LocationDatabaseHelper(this);
+    private LocationDatabaseHelper locationDB = new LocationDatabaseHelper(this);
     private final ActivityResultLauncher<String> locationPermissionRequest =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
                 locationPermissionGranted = isGranted;
@@ -63,52 +60,6 @@ public class NavigationActivity extends FragmentActivity implements OnMapReadyCa
                 }
             });
 
-    void createRoute(LatLng start, LatLng destination){
-        mMap.addMarker(new MarkerOptions().position(start).title("start"));
-        mMap.addMarker(new MarkerOptions().position(destination).title("destination"));
-
-        double midLat = (start.latitude + destination.latitude) / 2.0;
-        double midLng = (start.longitude + destination.longitude) / 2.0;
-
-        LatLng mean = new LatLng(midLat, midLng);
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mean, 9f));
-
-        String url = "https://maps.googleapis.com/maps/api/directions/json?" +
-                "origin=" + start.latitude + "," + start.longitude +
-                "&destination=" + destination.latitude + "," + destination.longitude +
-                "&key=" + apiKey;
-
-        new Thread(() -> {
-            try {
-                URL directionUrl = new URL(url);
-                HttpURLConnection conn = (HttpURLConnection) directionUrl.openConnection();
-                conn.connect();
-
-                BufferedReader reader = new BufferedReader(
-                        new InputStreamReader(conn.getInputStream()));
-                StringBuilder result = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) result.append(line);
-
-                JSONObject json = new JSONObject(result.toString());
-                String encoded = json.getJSONArray("routes")
-                        .getJSONObject(0)
-                        .getJSONObject("overview_polyline")
-                        .getString("points");
-
-                List<LatLng> points = PolylineDecoder.decode(encoded);
-
-                runOnUiThread(() -> {
-                    mMap.addPolyline(new PolylineOptions()
-                            .addAll(points)
-                            .color(Color.BLUE)
-                            .width(10f));
-                });
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }).start();
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -116,19 +67,32 @@ public class NavigationActivity extends FragmentActivity implements OnMapReadyCa
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigation);
 
-//        locationDB.insertLocation(11.2222, 33.4444);
-//        locationDB.insertLocation(telAviv);
+
 
 
         //this the is where the navigation code starts
         checkLocationPermissionAndInitialize();
+        BottomNavigationView nav = findViewById(R.id.bottom_navigation);
+        nav.setSelectedItemId(R.id.nav_map); // Mark current tab as selected
 
-//        SupportMapFragment mapFragment = (SupportMapFragment)
-//                getSupportFragmentManager().findFragmentById(R.id.map);
-//
-//        if (mapFragment != null) {
-//            mapFragment.getMapAsync(this);
-//        }
+        nav.setOnItemSelectedListener(item -> {
+            int itemId = item.getItemId();
+            if (itemId == R.id.nav_home) {
+                startActivity(new Intent(this, MainActivity.class));
+                overridePendingTransition(0, 0);
+                return true; // Already here
+            } else if (itemId == R.id.nav_map) {
+
+                return true;
+            } else if (itemId == R.id.nav_settings) {
+                startActivity(new Intent(this, SettingsActivity.class));
+                overridePendingTransition(0, 0);
+                return true;
+            }
+            return false;
+        });
+
+
 
         BottomNavigationView nav = findViewById(R.id.bottom_navigation);
         nav.setSelectedItemId(R.id.nav_map);
@@ -184,6 +148,8 @@ public class NavigationActivity extends FragmentActivity implements OnMapReadyCa
                 mRoutingOptions = new RoutingOptions();
                 mRoutingOptions.travelMode(RoutingOptions.TravelMode.DRIVING);
 
+//                locationDB.insertLocation(11.2222, 33.4444);
+//                locationDB.insertLocation(telAviv);
 //                LatLng placeToNav = locationDB.getLastLatLng();
 
                 double lat = getIntent().getDoubleExtra("LAT", 32.0853);
