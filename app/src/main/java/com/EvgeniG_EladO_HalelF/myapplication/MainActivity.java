@@ -3,7 +3,11 @@ package com.EvgeniG_EladO_HalelF.myapplication;
 import static androidx.fragment.app.FragmentManager.TAG;
 
 import android.Manifest;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.location.Location;
@@ -46,6 +50,10 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int LOCATION_PERMISSION_REQUEST = 100;
 
+    private static final String PREFS_NAME = "AppSettings";
+    private static final String NOTIFICATION_TIME_KEY = "notification_time";
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -81,7 +89,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         checkLocationPermission();
-        this.deleteDatabase("locationDB"); // DEV ONLY: clears DB to rebuild schema
+        //this.deleteDatabase("locationDB"); // DEV ONLY: clears DB to rebuild schema
 
         saveButton.setOnClickListener(v -> saveCurrentLocation());
 
@@ -218,6 +226,11 @@ public class MainActivity extends AppCompatActivity {
 //                    Log.d(TAG, "saveCurrentLocation: " + label); // debug message
                     Toast.makeText(this, "Location saved", Toast.LENGTH_SHORT).show();
                     loadRecentLocations();
+                    SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+
+                    int minutesBefore = prefs.getInt(NOTIFICATION_TIME_KEY, 10); // default: 10 minutes
+                    Log.d("ReminderReceiver", "Broadcast received!");
+                    scheduleReminder(minutesBefore);
 
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -276,5 +289,23 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+    private void scheduleReminder(int minutesFromNow) {
+        Intent intent = new Intent(this, ReminderReceiver.class);
+        intent.putExtra("title", "Where Did I Park");
+        intent.putExtra("message", "\"You saved your parking location. Open the app to view it.\"\n" );
+
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                this,
+                0,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
+
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        long triggerAtMillis = System.currentTimeMillis() + (minutesFromNow * 60 * 1000);
+
+        alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent);
+    }
+
 
 }

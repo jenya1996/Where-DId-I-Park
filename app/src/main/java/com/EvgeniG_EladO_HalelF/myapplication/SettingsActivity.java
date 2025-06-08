@@ -1,28 +1,22 @@
 package com.EvgeniG_EladO_HalelF.myapplication;
 
 import android.app.Activity;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.content.Context;
+
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.NotificationCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -35,7 +29,7 @@ public class SettingsActivity extends AppCompatActivity {
     private static final String RINGTONE_URI_KEY = "notification_sound_uri";
     private static final String NOTIFICATION_TIME_KEY = "notification_time";
     private static final String NAVIGATION_MODE_KEY = "navigation_mode";
-    private static final String CHANNEL_ID = "notify_channel";
+
 
     private Uri selectedRingtoneUri;
     private TextView soundNameText;
@@ -76,7 +70,7 @@ public class SettingsActivity extends AppCompatActivity {
         updateSoundTitle();
 
         Button selectSoundButton = findViewById(R.id.select_sound_button);
-        Button testNotificationButton = findViewById(R.id.test_notification_button);
+        Button saveSettingsButton = findViewById(R.id.save_settings_button);
 
         selectSoundButton.setOnClickListener(v -> {
             Intent intent = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
@@ -86,7 +80,27 @@ public class SettingsActivity extends AppCompatActivity {
             ringtonePickerLauncher.launch(intent);
         });
 
-        testNotificationButton.setOnClickListener(v -> showTestNotification());
+        saveSettingsButton.setOnClickListener(v -> {
+            // Save notification time
+            String timeText = notificationTimeInput.getText().toString();
+            if (!timeText.isEmpty()) {
+                prefs.edit().putInt(NOTIFICATION_TIME_KEY, Integer.parseInt(timeText)).apply();
+            }
+
+            // Save navigation mode
+            int checkedId = navigationModeGroup.getCheckedRadioButtonId();
+            String mode = (checkedId == R.id.walking_mode) ? "walking" : "transit";
+            prefs.edit().putString(NAVIGATION_MODE_KEY, mode).apply();
+
+            // Save ringtone URI
+            if (selectedRingtoneUri != null) {
+                prefs.edit().putString(RINGTONE_URI_KEY, selectedRingtoneUri.toString()).apply();
+            }
+
+            Toast.makeText(this, "Settings saved", Toast.LENGTH_SHORT).show();
+
+
+        });
 
         ringtonePickerLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
@@ -95,27 +109,12 @@ public class SettingsActivity extends AppCompatActivity {
                         Uri uri = result.getData().getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);
                         if (uri != null) {
                             selectedRingtoneUri = uri;
-                            SharedPreferences.Editor editor = getSharedPreferences(PREFS_NAME, MODE_PRIVATE).edit();
-                            editor.putString(RINGTONE_URI_KEY, uri.toString()).apply();
+                            prefs.edit().putString(RINGTONE_URI_KEY, uri.toString()).apply();
                             updateSoundTitle();
                             RingtoneManager.getRingtone(this, uri).play();
                         }
                     }
                 });
-
-        navigationModeGroup.setOnCheckedChangeListener((group, checkedId) -> {
-            String mode = checkedId == R.id.walking_mode ? "walking" : "transit";
-            prefs.edit().putString(NAVIGATION_MODE_KEY, mode).apply();
-        });
-
-        notificationTimeInput.setOnFocusChangeListener((v, hasFocus) -> {
-            if (!hasFocus) {
-                String timeText = notificationTimeInput.getText().toString();
-                if (!timeText.isEmpty()) {
-                    prefs.edit().putInt(NOTIFICATION_TIME_KEY, Integer.parseInt(timeText)).apply();
-                }
-            }
-        });
 
         BottomNavigationView nav = findViewById(R.id.bottom_navigation);
         nav.setSelectedItemId(R.id.nav_settings);
@@ -143,28 +142,4 @@ public class SettingsActivity extends AppCompatActivity {
         }
     }
 
-    private void showTestNotification() {
-        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(
-                    CHANNEL_ID, getString(R.string.reminder_channel), NotificationManager.IMPORTANCE_HIGH);
-            channel.setDescription(getString(R.string.channel_description));
-            channel.setSound(selectedRingtoneUri, null);
-            notificationManager.createNotificationChannel(channel);
-        }
-
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_notification)
-                .setContentTitle(getString(R.string.test_notification_title))
-                .setContentText(getString(R.string.test_notification_message))
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setAutoCancel(true);
-
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O && selectedRingtoneUri != null) {
-            builder.setSound(selectedRingtoneUri);
-        }
-
-        notificationManager.notify(1, builder.build());
-    }
 }

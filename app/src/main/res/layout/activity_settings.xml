@@ -94,11 +94,11 @@
             </RadioGroup>
 
             <Button
-                android:id="@+id/test_notification_button"
+                android:id="@+id/save_settings_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
-                android:text="Test Notification" />
+                android:text="Save Settings" />
         </LinearLayout>
     </ScrollView>
 
