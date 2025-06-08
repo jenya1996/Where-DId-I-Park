@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
@@ -39,6 +40,10 @@ public class MainActivity extends AppCompatActivity {
     private LocationDatabaseHelper dbHelper;
     private Spinner locationSpinner;
     private List<LatLng> savedLatLngList = new ArrayList<>();
+
+    private EditText noteInput;
+    private List<String> savedNotesList = new ArrayList<>();
+
     private static final int LOCATION_PERMISSION_REQUEST = 100;
 
     @Override
@@ -54,6 +59,8 @@ public class MainActivity extends AppCompatActivity {
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map_fragment);
+
+        noteInput = findViewById(R.id.note_input);
 
         if (mapFragment != null) {
             mapFragment.getMapAsync(googleMap -> {
@@ -74,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         checkLocationPermission();
-//        this.deleteDatabase("locationDB"); // DEV ONLY: clears DB to rebuild schema
+        this.deleteDatabase("locationDB"); // DEV ONLY: clears DB to rebuild schema
 
         saveButton.setOnClickListener(v -> saveCurrentLocation());
 
@@ -199,11 +206,13 @@ public class MainActivity extends AppCompatActivity {
                         Address addr = addresses.get(0);
                         label = addr.getAddressLine(0);
                     }
+                    String note = noteInput.getText().toString();
 
                     dbHelper.insertLocationWithLabel(
                             location.getLatitude(),
                             location.getLongitude(),
-                            label
+                            label,
+                            note
                     );
 
 //                    Log.d(TAG, "saveCurrentLocation: " + label); // debug message
@@ -225,16 +234,22 @@ public class MainActivity extends AppCompatActivity {
         Cursor cursor = dbHelper.getAllLocations();
         List<String> labels = new ArrayList<>();
         savedLatLngList.clear();
+        savedNotesList.clear();
 
         if (cursor.moveToLast()) {
             int latIndex = cursor.getColumnIndex("latitude");
             int lngIndex = cursor.getColumnIndex("longitude");
+            int labelIndex = cursor.getColumnIndex("label");
+            int noteIndex = cursor.getColumnIndex("note");
 
             do {
                 double lat = cursor.getDouble(latIndex);
                 double lng = cursor.getDouble(lngIndex);
+                String label = cursor.getString(labelIndex);
+                String note = cursor.getString(noteIndex);
+
                 savedLatLngList.add(new LatLng(lat, lng));
-                String label = cursor.getString(cursor.getColumnIndex("label"));
+                savedNotesList.add(note != null ? note : "");
                 labels.add(label != null ? label : "Location: " + lat + ", " + lng);
             } while (cursor.moveToPrevious() && savedLatLngList.size() < 5);
         }
@@ -246,5 +261,20 @@ public class MainActivity extends AppCompatActivity {
         );
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         locationSpinner.setAdapter(adapter);
+
+        locationSpinner.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(android.widget.AdapterView<?> parent, android.view.View view, int position, long id) {
+                if (position >= 0 && position < savedNotesList.size()) {
+                    noteInput.setText(savedNotesList.get(position));
+                }
+            }
+
+            @Override
+            public void onNothingSelected(android.widget.AdapterView<?> parent) {
+                noteInput.setText("");
+            }
+        });
     }
+
 }
