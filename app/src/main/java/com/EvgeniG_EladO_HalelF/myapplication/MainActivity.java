@@ -1,13 +1,17 @@
 package com.EvgeniG_EladO_HalelF.myapplication;
 
+import static androidx.fragment.app.FragmentManager.TAG;
+
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.location.Location;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
@@ -20,6 +24,12 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.gms.maps.model.LatLng;
+import android.location.Address;
+import android.location.Geocoder;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Locale;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +40,10 @@ public class MainActivity extends AppCompatActivity {
     private LocationDatabaseHelper dbHelper;
     private Spinner locationSpinner;
     private List<LatLng> savedLatLngList = new ArrayList<>();
+
+    private EditText noteInput;
+    private List<String> savedNotesList = new ArrayList<>();
+
     private static final int LOCATION_PERMISSION_REQUEST = 100;
 
     @Override
@@ -45,6 +59,8 @@ public class MainActivity extends AppCompatActivity {
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map_fragment);
+
+        noteInput = findViewById(R.id.note_input);
 
         if (mapFragment != null) {
             mapFragment.getMapAsync(googleMap -> {
@@ -65,6 +81,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         checkLocationPermission();
+        this.deleteDatabase("locationDB"); // DEV ONLY: clears DB to rebuild schema
 
         saveButton.setOnClickListener(v -> saveCurrentLocation());
 
@@ -123,6 +140,50 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+//    private void saveCurrentLocation() {
+//        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+//                != PackageManager.PERMISSION_GRANTED) {
+//            Toast.makeText(this, "GPS permission not granted", Toast.LENGTH_SHORT).show();
+//            return;
+//        }
+//
+//        fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
+//            if (location != null) {
+//                dbHelper.insertLocation(location.getLatitude(), location.getLongitude());
+//                Toast.makeText(this, "Location saved", Toast.LENGTH_SHORT).show();
+//                loadRecentLocations();
+//            } else {
+//                Toast.makeText(this, "Could not get location", Toast.LENGTH_SHORT).show();
+//            }
+//        });
+//
+//        Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+//        try {
+//            List<Address> addresses = geocoder.getFromLocation(
+//                    location.getLatitude(),
+//                    location.getLongitude(),
+//                    1
+//            );
+//
+//            String label = "Unknown Location";
+//            if (addresses != null && !addresses.isEmpty()) {
+//                Address addr = addresses.get(0);
+//                label = addr.getFeatureName(); // or addr.getAddressLine(0)
+//            }
+//
+//            // Save to DB with label
+//            dbHelper.insertLocationWithLabel(location.getLatitude(), location.getLongitude(), label);
+//
+//            Toast.makeText(this, "Location saved", Toast.LENGTH_SHORT).show();
+//            loadRecentLocations();
+//
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//            Toast.makeText(this, "Could not retrieve address", Toast.LENGTH_SHORT).show();
+//        }
+//
+//    }
+
     private void saveCurrentLocation() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -132,29 +193,64 @@ public class MainActivity extends AppCompatActivity {
 
         fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
             if (location != null) {
-                dbHelper.insertLocation(location.getLatitude(), location.getLongitude());
-                Toast.makeText(this, "Location saved", Toast.LENGTH_SHORT).show();
-                loadRecentLocations();
+                Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+                try {
+                    List<Address> addresses = geocoder.getFromLocation(
+                            location.getLatitude(),
+                            location.getLongitude(),
+                            1
+                    );
+
+                    String label = "Unknown Address";
+                    if (addresses != null && !addresses.isEmpty()) {
+                        Address addr = addresses.get(0);
+                        label = addr.getAddressLine(0);
+                    }
+                    String note = noteInput.getText().toString();
+
+                    dbHelper.insertLocationWithLabel(
+                            location.getLatitude(),
+                            location.getLongitude(),
+                            label,
+                            note
+                    );
+
+//                    Log.d(TAG, "saveCurrentLocation: " + label); // debug message
+                    Toast.makeText(this, "Location saved", Toast.LENGTH_SHORT).show();
+                    loadRecentLocations();
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    Toast.makeText(this, "Could not retrieve address", Toast.LENGTH_SHORT).show();
+                }
             } else {
                 Toast.makeText(this, "Could not get location", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
+
     private void loadRecentLocations() {
         Cursor cursor = dbHelper.getAllLocations();
         List<String> labels = new ArrayList<>();
         savedLatLngList.clear();
+        savedNotesList.clear();
 
         if (cursor.moveToLast()) {
             int latIndex = cursor.getColumnIndex("latitude");
             int lngIndex = cursor.getColumnIndex("longitude");
+            int labelIndex = cursor.getColumnIndex("label");
+            int noteIndex = cursor.getColumnIndex("note");
 
             do {
                 double lat = cursor.getDouble(latIndex);
                 double lng = cursor.getDouble(lngIndex);
+                String label = cursor.getString(labelIndex);
+                String note = cursor.getString(noteIndex);
+
                 savedLatLngList.add(new LatLng(lat, lng));
-                labels.add(String.format("Location: %.4f, %.4f", lat, lng));
+                savedNotesList.add(note != null ? note : "");
+                labels.add(label != null ? label : "Location: " + lat + ", " + lng);
             } while (cursor.moveToPrevious() && savedLatLngList.size() < 5);
         }
 
@@ -165,5 +261,20 @@ public class MainActivity extends AppCompatActivity {
         );
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         locationSpinner.setAdapter(adapter);
+
+        locationSpinner.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(android.widget.AdapterView<?> parent, android.view.View view, int position, long id) {
+                if (position >= 0 && position < savedNotesList.size()) {
+                    noteInput.setText(savedNotesList.get(position));
+                }
+            }
+
+            @Override
+            public void onNothingSelected(android.widget.AdapterView<?> parent) {
+                noteInput.setText("");
+            }
+        });
     }
+
 }
