@@ -77,11 +77,20 @@
             android:gravity="center"
             android:layout_marginTop="16dp">
 
-            <Spinner
-                android:id="@+id/location_spinner"
+            <androidx.cardview.widget.CardView
                 android:layout_width="200dp"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="12dp" />
+                app:cardCornerRadius="8dp"
+                app:cardElevation="4dp"
+                android:layout_marginEnd="12dp">
+
+                <Spinner
+                    android:id="@+id/location_spinner"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="4dp"
+                    android:background="@android:color/transparent" />
+            </androidx.cardview.widget.CardView>
 
             <Button
                 android:id="@+id/navigate_button"
@@ -89,6 +98,7 @@
                 android:layout_height="wrap_content"
                 android:text="Navigate" />
         </LinearLayout>
+
     </LinearLayout>
 
     <!-- Bottom Navigation Bar -->
