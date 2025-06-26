@@ -101,7 +101,14 @@ public class NavigationActivity extends FragmentActivity implements OnMapReadyCa
                         googleMap.followMyLocation(CameraPerspective.TILTED));
 
                 mRoutingOptions = new RoutingOptions();
-                mRoutingOptions.travelMode(RoutingOptions.TravelMode.DRIVING);
+
+                String mode = getIntent().getStringExtra("MODE");
+                if ("walking".equals(mode)) {
+                    mRoutingOptions.travelMode(RoutingOptions.TravelMode.WALKING);
+                } else {
+                    mRoutingOptions.travelMode(RoutingOptions.TravelMode.DRIVING);
+                }
+
 
                 double lat = getIntent().getDoubleExtra("LAT", 0);
                 double lng = getIntent().getDoubleExtra("LNG", 0);
