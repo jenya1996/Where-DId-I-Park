@@ -63,7 +63,7 @@ public class NavigationActivity extends FragmentActivity implements OnMapReadyCa
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
+        displayMessage("run onCreate");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigation);
 
