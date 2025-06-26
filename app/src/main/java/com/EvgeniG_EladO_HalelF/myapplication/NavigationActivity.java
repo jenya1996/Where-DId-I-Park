@@ -2,7 +2,6 @@ package com.EvgeniG_EladO_HalelF.myapplication;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.graphics.Color;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.util.Log;
@@ -30,13 +29,6 @@ import com.google.android.libraries.navigation.SupportNavigationFragment;
 import com.google.android.libraries.navigation.Waypoint;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.List;
 
 public class NavigationActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -46,9 +38,6 @@ public class NavigationActivity extends FragmentActivity implements OnMapReadyCa
     private SupportNavigationFragment mNavFragment;
     private RoutingOptions mRoutingOptions;
     private boolean locationPermissionGranted = true;
-
-    private LatLng jerusalem = new LatLng(31.7683, 35.2137);
-    private LatLng telAviv = new LatLng(32.0853, 34.7818);
     private LocationDatabaseHelper locationDB = new LocationDatabaseHelper(this);
     private final ActivityResultLauncher<String> locationPermissionRequest =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
@@ -60,15 +49,11 @@ public class NavigationActivity extends FragmentActivity implements OnMapReadyCa
                 }
             });
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         displayMessage("run onCreate");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigation);
-
-
-
 
         //this the is where the navigation code starts
         checkLocationPermissionAndInitialize();
@@ -91,33 +76,11 @@ public class NavigationActivity extends FragmentActivity implements OnMapReadyCa
             }
             return false;
         });
-
-
-
-//        BottomNavigationView nav = findViewById(R.id.bottom_navigation);
-//        nav.setSelectedItemId(R.id.nav_map);
-//        nav.setOnItemSelectedListener(item -> {
-//            int itemId = item.getItemId();
-//            if (itemId == R.id.nav_home) {
-//                startActivity(new Intent(this, MainActivity.class));
-//                overridePendingTransition(0, 0);
-//                return true;
-//            } else if (itemId == R.id.nav_map) {
-//                return true; // Already on this screen
-//            } else if (itemId == R.id.nav_settings) {
-//                startActivity(new Intent(this, SettingsActivity.class));
-//                overridePendingTransition(0, 0);
-//                return true;
-//            }
-//            return false;
-//
-//        });
     }
 
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
         mMap = googleMap;
-//        createRoute(jerusalem, telAviv);
     }
 
     private void checkLocationPermissionAndInitialize() {
@@ -147,10 +110,6 @@ public class NavigationActivity extends FragmentActivity implements OnMapReadyCa
 
                 mRoutingOptions = new RoutingOptions();
                 mRoutingOptions.travelMode(RoutingOptions.TravelMode.DRIVING);
-
-//                locationDB.insertLocation(11.2222, 33.4444);
-//                locationDB.insertLocation(telAviv);
-//                LatLng placeToNav = locationDB.getLastLatLng();
 
                 double lat = getIntent().getDoubleExtra("LAT", 32.0853);
                 double lng = getIntent().getDoubleExtra("LNG", 34.7818);
