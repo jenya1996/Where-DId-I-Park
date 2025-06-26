@@ -106,10 +106,12 @@ public class NavigationActivity extends FragmentActivity implements OnMapReadyCa
                 mRoutingOptions = new RoutingOptions();
                 mRoutingOptions.travelMode(RoutingOptions.TravelMode.DRIVING);
 
-                double lat = getIntent().getDoubleExtra("LAT", 32.0853);
-                double lng = getIntent().getDoubleExtra("LNG", 34.7818);
-                LatLng selectedDestination = new LatLng(lat, lng);
-                navigateToPlace(selectedDestination, mRoutingOptions);
+                double lat = getIntent().getDoubleExtra("LAT", 0);
+                double lng = getIntent().getDoubleExtra("LNG", 0);
+                if(lat != 0){
+                    LatLng selectedDestination = new LatLng(lat, lng);
+                    navigateToPlace(selectedDestination, mRoutingOptions);
+                }
 
             }
 
