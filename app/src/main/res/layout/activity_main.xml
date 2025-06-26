@@ -19,7 +19,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-
     <!-- Controls: Save Button, Spinner, Navigate -->
     <LinearLayout
         android:id="@+id/map_controls"
@@ -33,22 +32,42 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-
-    <Button
+        <Button
             android:id="@+id/save_location_button"
             android:layout_width="200dp"
             android:layout_height="wrap_content"
             android:text="Save Current Location" />
 
-    <EditText
-        android:id="@+id/note_input"
-        android:layout_width="200dp"
-        android:layout_height="wrap_content"
-        android:hint="Description..."
-        android:inputType="text"
-        android:maxLength="15"
-        android:layout_marginTop="12dp"/>
+        <EditText
+            android:id="@+id/note_input"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:hint="Description..."
+            android:inputType="text"
+            android:maxLength="15"
+            android:layout_marginTop="12dp" />
 
+        <!-- Navigation Mode Radio Group -->
+        <RadioGroup
+            android:id="@+id/navigation_mode_group_main"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp">
+
+            <RadioButton
+                android:id="@+id/walking_mode_main"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Walk" />
+
+            <RadioButton
+                android:id="@+id/driving_mode_main"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Drive"
+                android:layout_marginStart="16dp" />
+        </RadioGroup>
 
         <LinearLayout
             android:id="@+id/spinnerRow"

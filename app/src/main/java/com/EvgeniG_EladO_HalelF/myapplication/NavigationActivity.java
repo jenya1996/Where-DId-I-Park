@@ -146,7 +146,14 @@ public class NavigationActivity extends FragmentActivity implements OnMapReadyCa
                         googleMap.followMyLocation(CameraPerspective.TILTED));
 
                 mRoutingOptions = new RoutingOptions();
-                mRoutingOptions.travelMode(RoutingOptions.TravelMode.DRIVING);
+
+                String mode = getIntent().getStringExtra("MODE");
+                if ("walking".equals(mode)) {
+                    mRoutingOptions.travelMode(RoutingOptions.TravelMode.WALKING);
+                } else {
+                    mRoutingOptions.travelMode(RoutingOptions.TravelMode.DRIVING);
+                }
+
 
 //                locationDB.insertLocation(11.2222, 33.4444);
 //                locationDB.insertLocation(telAviv);

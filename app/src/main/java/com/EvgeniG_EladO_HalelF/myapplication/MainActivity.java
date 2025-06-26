@@ -16,6 +16,7 @@ import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.Toast;
 
@@ -52,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String PREFS_NAME = "AppSettings";
     private static final String NOTIFICATION_TIME_KEY = "notification_time";
+    private RadioGroup navigationModeGroup;
 
 
     @Override
@@ -69,6 +71,17 @@ public class MainActivity extends AppCompatActivity {
                 .findFragmentById(R.id.map_fragment);
 
         noteInput = findViewById(R.id.note_input);
+
+        navigationModeGroup = findViewById(R.id.navigation_mode_group_main);
+
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        String defaultMode = prefs.getString("navigation_mode", "walking");
+
+        if ("driving".equals(defaultMode)) {
+            navigationModeGroup.check(R.id.driving_mode_main);
+        } else {
+            navigationModeGroup.check(R.id.walking_mode_main);
+        }
 
         if (mapFragment != null) {
             mapFragment.getMapAsync(googleMap -> {
@@ -97,10 +110,15 @@ public class MainActivity extends AppCompatActivity {
             int selected = locationSpinner.getSelectedItemPosition();
             if (selected >= 0 && selected < savedLatLngList.size()) {
                 LatLng latLng = savedLatLngList.get(selected);
+                int selectedModeId = navigationModeGroup.getCheckedRadioButtonId();
+                String mode = (selectedModeId == R.id.driving_mode_main) ? "driving" : "walking";
+
                 Intent intent = new Intent(this, NavigationActivity.class);
                 intent.putExtra("LAT", latLng.latitude);
                 intent.putExtra("LNG", latLng.longitude);
+                intent.putExtra("MODE", mode);
                 startActivity(intent);
+
             }
         });
 
@@ -122,6 +140,12 @@ public class MainActivity extends AppCompatActivity {
             return false;
 
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        updateNavigationModeFromPreferences();
     }
 
     private void checkLocationPermission() {
@@ -307,5 +331,15 @@ public class MainActivity extends AppCompatActivity {
         alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent);
     }
 
+    private void updateNavigationModeFromPreferences() {
+        SharedPreferences prefs = getSharedPreferences("AppSettings", MODE_PRIVATE);
+        String navMode = prefs.getString("navigation_mode", "walking");
+
+        if ("walking".equals(navMode)) {
+            navigationModeGroup.check(R.id.walking_mode_main); // or mode_walking depending on your ID
+        } else {
+            navigationModeGroup.check(R.id.driving_mode_main); // or mode_driving
+        }
+    }
 
 }
