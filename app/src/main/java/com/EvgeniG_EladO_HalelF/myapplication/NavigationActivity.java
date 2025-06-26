@@ -57,25 +57,8 @@ public class NavigationActivity extends FragmentActivity implements OnMapReadyCa
 
         //this the is where the navigation code starts
         checkLocationPermissionAndInitialize();
-        BottomNavigationView nav = findViewById(R.id.bottom_navigation);
-        nav.setSelectedItemId(R.id.nav_map); // Mark current tab as selected
-
-        nav.setOnItemSelectedListener(item -> {
-            int itemId = item.getItemId();
-            if (itemId == R.id.nav_home) {
-                startActivity(new Intent(this, MainActivity.class));
-                overridePendingTransition(0, 0);
-                return true; // Already here
-            } else if (itemId == R.id.nav_map) {
-
-                return true;
-            } else if (itemId == R.id.nav_settings) {
-                startActivity(new Intent(this, SettingsActivity.class));
-                overridePendingTransition(0, 0);
-                return true;
-            }
-            return false;
-        });
+        // Setup Bottom Navigation
+        NavigationUtils.setupBottomNavBar(this);
     }
 
     @Override
@@ -150,8 +133,34 @@ public class NavigationActivity extends FragmentActivity implements OnMapReadyCa
         ListenableResultFuture<Navigator.RouteStatus> pendingRoute =
                 mNavigator.setDestination(destination, travelMode);
 
-        // Setup Bottom Navigation
-        NavigationUtils.setupBottomNavBar(this);
+        pendingRoute.setOnResultListener(result -> {
+
+            switch (result) {
+                case OK:
+                    if (getActionBar() != null) {
+                        getActionBar().hide();
+                    }
+                    mNavigator.setAudioGuidance(Navigator.AudioGuidance.VOICE_ALERTS_AND_GUIDANCE);
+                    if (BuildConfig.DEBUG) {
+                        mNavigator.getSimulator().simulateLocationsAlongExistingRoute(
+                                new SimulationOptions().speedMultiplier(5));
+                    }
+                    mNavigator.startGuidance();
+                    break;
+                case NO_ROUTE_FOUND:
+                    displayMessage("No route found.");
+                    break;
+                case NETWORK_ERROR:
+                    displayMessage("Network error.");
+                    break;
+                case ROUTE_CANCELED:
+                    displayMessage("Route canceled.");
+                    break;
+                default:
+                    displayMessage("Route error: " + result);
+                    break;
+            }
+        });
     }
 
     private void displayMessage(String msg) {
