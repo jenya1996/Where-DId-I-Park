@@ -150,34 +150,8 @@ public class NavigationActivity extends FragmentActivity implements OnMapReadyCa
         ListenableResultFuture<Navigator.RouteStatus> pendingRoute =
                 mNavigator.setDestination(destination, travelMode);
 
-        pendingRoute.setOnResultListener(result -> {
-
-            switch (result) {
-                case OK:
-                    if (getActionBar() != null) {
-                        getActionBar().hide();
-                    }
-                    mNavigator.setAudioGuidance(Navigator.AudioGuidance.VOICE_ALERTS_AND_GUIDANCE);
-                    if (BuildConfig.DEBUG) {
-                        mNavigator.getSimulator().simulateLocationsAlongExistingRoute(
-                                new SimulationOptions().speedMultiplier(5));
-                    }
-                    mNavigator.startGuidance();
-                    break;
-                case NO_ROUTE_FOUND:
-                    displayMessage("No route found.");
-                    break;
-                case NETWORK_ERROR:
-                    displayMessage("Network error.");
-                    break;
-                case ROUTE_CANCELED:
-                    displayMessage("Route canceled.");
-                    break;
-                default:
-                    displayMessage("Route error: " + result);
-                    break;
-            }
-        });
+        // Setup Bottom Navigation
+        NavigationUtils.setupBottomNavBar(this);
     }
 
     private void displayMessage(String msg) {

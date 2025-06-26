@@ -104,24 +104,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        BottomNavigationView nav = findViewById(R.id.bottom_navigation);
-        nav.setSelectedItemId(R.id.nav_home);
-        nav.setOnItemSelectedListener(item -> {
-            int itemId = item.getItemId();
-            if (itemId == R.id.nav_home) {
-                return true; // Already on this screen
-            } else if (itemId == R.id.nav_map) {
-                startActivity(new Intent(this, NavigationActivity.class));
-                overridePendingTransition(0, 0);
-                return true;
-            } else if (itemId == R.id.nav_settings) {
-                startActivity(new Intent(this, SettingsActivity.class));
-                overridePendingTransition(0, 0);
-                return true;
-            }
-            return false;
-
-        });
+        // Setup Bottom Navigation
+        NavigationUtils.setupBottomNavBar(this);
     }
 
     private void checkLocationPermission() {
