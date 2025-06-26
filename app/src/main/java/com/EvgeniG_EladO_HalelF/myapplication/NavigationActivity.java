@@ -62,6 +62,18 @@ public class NavigationActivity extends FragmentActivity implements OnMapReadyCa
     }
 
     @Override
+    protected void onDestroy(){
+        super.onDestroy();
+        if (mNavigator != null) {
+            displayMessage("Clear mNavigator.");
+            mNavigator.stopGuidance();     // Stops voice + route
+            mNavigator.clearDestinations();
+            mNavigator.cleanup();
+            mNavigator = null;
+        }
+    }
+
+    @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
         mMap = googleMap;
     }
