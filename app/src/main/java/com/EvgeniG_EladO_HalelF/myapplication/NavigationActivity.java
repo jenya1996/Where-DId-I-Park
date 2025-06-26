@@ -51,7 +51,6 @@ public class NavigationActivity extends FragmentActivity implements OnMapReadyCa
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        displayMessage("run onCreate");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigation);
 
@@ -65,7 +64,6 @@ public class NavigationActivity extends FragmentActivity implements OnMapReadyCa
     protected void onDestroy(){
         super.onDestroy();
         if (mNavigator != null) {
-            displayMessage("Clear mNavigator.");
             mNavigator.stopGuidance();     // Stops voice + route
             mNavigator.clearDestinations();
             mNavigator.cleanup();
@@ -97,7 +95,6 @@ public class NavigationActivity extends FragmentActivity implements OnMapReadyCa
             @RequiresPermission(allOf = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION})
             @Override
             public void onNavigatorReady(@NonNull Navigator navigator) {
-                displayMessage("Navigator ready.");
                 mNavigator = navigator;
 
                 mNavFragment.getMapAsync(googleMap ->
@@ -140,7 +137,7 @@ public class NavigationActivity extends FragmentActivity implements OnMapReadyCa
             destination = Waypoint.builder().setLatLng(location.latitude, location.longitude).build();
 
         } catch (IllegalArgumentException e) {
-            displayMessage("Invalid LatLng");
+            displayMessage("Invalid Location");
             return;
         }
 
