@@ -39,6 +39,10 @@ import java.util.Locale;
 import java.util.ArrayList;
 import java.util.List;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+
 public class MainActivity extends AppCompatActivity {
 
     private FusedLocationProviderClient fusedLocationClient;
@@ -181,90 +185,100 @@ public class MainActivity extends AppCompatActivity {
 //
 //        fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
 //            if (location != null) {
-//                dbHelper.insertLocation(location.getLatitude(), location.getLongitude());
-//                Toast.makeText(this, "Location saved", Toast.LENGTH_SHORT).show();
-//                loadRecentLocations();
+//                Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+//                try {
+//                    List<Address> addresses = geocoder.getFromLocation(
+//                            location.getLatitude(),
+//                            location.getLongitude(),
+//                            1
+//                    );
+//
+//                    String label = "Unknown Address";
+//                    if (addresses != null && !addresses.isEmpty()) {
+//                        Address addr = addresses.get(0);
+//                        label = addr.getAddressLine(0);
+//                    }
+//                    String note = noteInput.getText().toString();
+//
+//                    dbHelper.insertLocationWithLabel(
+//                            location.getLatitude(),
+//                            location.getLongitude(),
+//                            label,
+//                            note
+//                    );
+//
+////                    Log.d(TAG, "saveCurrentLocation: " + label); // debug message
+//                    Toast.makeText(this, "Location saved", Toast.LENGTH_SHORT).show();
+//                    loadRecentLocations();
+//                    SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+//
+//                    int minutesBefore = prefs.getInt(NOTIFICATION_TIME_KEY, 10); // default: 10 minutes
+//                    Log.d("ReminderReceiver", "Broadcast received!");
+//                    scheduleReminder(minutesBefore);
+//
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                    Toast.makeText(this, "Could not retrieve address", Toast.LENGTH_SHORT).show();
+//                }
 //            } else {
 //                Toast.makeText(this, "Could not get location", Toast.LENGTH_SHORT).show();
 //            }
 //        });
-//
-//        Geocoder geocoder = new Geocoder(this, Locale.getDefault());
-//        try {
-//            List<Address> addresses = geocoder.getFromLocation(
-//                    location.getLatitude(),
-//                    location.getLongitude(),
-//                    1
-//            );
-//
-//            String label = "Unknown Location";
-//            if (addresses != null && !addresses.isEmpty()) {
-//                Address addr = addresses.get(0);
-//                label = addr.getFeatureName(); // or addr.getAddressLine(0)
-//            }
-//
-//            // Save to DB with label
-//            dbHelper.insertLocationWithLabel(location.getLatitude(), location.getLongitude(), label);
-//
-//            Toast.makeText(this, "Location saved", Toast.LENGTH_SHORT).show();
-//            loadRecentLocations();
-//
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//            Toast.makeText(this, "Could not retrieve address", Toast.LENGTH_SHORT).show();
-//        }
-//
 //    }
 
-    private void saveCurrentLocation() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(this, "GPS permission not granted", Toast.LENGTH_SHORT).show();
-            return;
-        }
+private void saveCurrentLocation() {
+    if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+            != PackageManager.PERMISSION_GRANTED) {
+        Toast.makeText(this, "GPS permission not granted", Toast.LENGTH_SHORT).show();
+        return;
+    }
 
-        fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
-            if (location != null) {
+    fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
+        if (location != null) {
+            ExecutorService executor = Executors.newSingleThreadExecutor();
+            executor.execute(() -> {
                 Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+                String label = "Unknown Address";
+
                 try {
                     List<Address> addresses = geocoder.getFromLocation(
                             location.getLatitude(),
                             location.getLongitude(),
                             1
                     );
-
-                    String label = "Unknown Address";
                     if (addresses != null && !addresses.isEmpty()) {
                         Address addr = addresses.get(0);
                         label = addr.getAddressLine(0);
                     }
-                    String note = noteInput.getText().toString();
-
-                    dbHelper.insertLocationWithLabel(
-                            location.getLatitude(),
-                            location.getLongitude(),
-                            label,
-                            note
-                    );
-
-//                    Log.d(TAG, "saveCurrentLocation: " + label); // debug message
-                    Toast.makeText(this, "Location saved", Toast.LENGTH_SHORT).show();
-                    loadRecentLocations();
-                    SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-
-                    int minutesBefore = prefs.getInt(NOTIFICATION_TIME_KEY, 10); // default: 10 minutes
-                    Log.d("ReminderReceiver", "Broadcast received!");
-                    scheduleReminder(minutesBefore);
-
                 } catch (IOException e) {
                     e.printStackTrace();
-                    Toast.makeText(this, "Could not retrieve address", Toast.LENGTH_SHORT).show();
                 }
-            } else {
-                Toast.makeText(this, "Could not get location", Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
+
+                String note = noteInput.getText().toString();
+
+                dbHelper.insertLocationWithLabel(
+                        location.getLatitude(),
+                        location.getLongitude(),
+                        label,
+                        note
+                );
+
+                SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+                int minutesBefore = prefs.getInt(NOTIFICATION_TIME_KEY, 10);
+                scheduleReminder(minutesBefore);
+
+                runOnUiThread(() -> {
+                    Toast.makeText(this, "Location saved", Toast.LENGTH_SHORT).show();
+                    loadRecentLocations();
+                });
+
+                executor.shutdown(); // Cleanly shuts down the thread after task is complete
+            });
+        } else {
+            Toast.makeText(this, "Could not get location", Toast.LENGTH_SHORT).show();
+        }
+    });
+}
 
 
     private void loadRecentLocations() {
