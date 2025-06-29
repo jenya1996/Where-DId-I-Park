@@ -45,6 +45,7 @@ public class NavigationActivity extends FragmentActivity implements OnMapReadyCa
     private RoutingOptions mRoutingOptions;
     private boolean locationPermissionGranted = true;
     private LocationDatabaseHelper locationDB = new LocationDatabaseHelper(this);
+    private Button stopButton;
     private final ActivityResultLauncher<String> locationPermissionRequest =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
                 locationPermissionGranted = isGranted;
@@ -74,6 +75,7 @@ public class NavigationActivity extends FragmentActivity implements OnMapReadyCa
             mNavigator.clearDestinations();
             mNavigator.cleanup();
             mNavigator = null;
+            stopButton.setVisibility(View.GONE);
         }
     }
 
@@ -144,19 +146,20 @@ public class NavigationActivity extends FragmentActivity implements OnMapReadyCa
         });
 
         View stopButtonView = getLayoutInflater().inflate(R.layout.view_stop_button, null);
-        Button stopButton = stopButtonView.findViewById(R.id.btn_stop_guidance);
+        stopButton = stopButtonView.findViewById(R.id.btn_stop_guidance);
 
         stopButton.setOnClickListener(v -> {
             if (mNavigator != null) {
                 mNavigator.stopGuidance();
                 mNavigator.clearDestinations();
                 mNavigator.cleanup();
+                stopButton.setVisibility(View.GONE);
             }
             displayMessage("Navigation stopped.");
             finish();
         });
 
-// Add the button inside the Google UI at the bottom-right corner (adaptive)
+        // Add the button inside the Google UI at the bottom-right corner (adaptive)
         mNavFragment.setCustomControl(stopButtonView, CustomControlPosition.BOTTOM_END_BELOW);
 
 
@@ -183,6 +186,8 @@ public class NavigationActivity extends FragmentActivity implements OnMapReadyCa
                         getActionBar().hide();
                     }
                     mNavigator.setAudioGuidance(Navigator.AudioGuidance.VOICE_ALERTS_AND_GUIDANCE);
+                    stopButton.setVisibility(View.VISIBLE);
+
 
                     if (BuildConfig.DEBUG) {
                         mNavigator.getSimulator().simulateLocationsAlongExistingRoute(
