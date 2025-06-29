@@ -9,7 +9,7 @@
 
     <!-- Bigger Logo -->
     <ImageView
-        android:id="@+id/logoImage"
+        android:id="@+id/app"
         android:layout_width="330dp"
         android:layout_height="330dp"
         android:contentDescription="@string/logo"
