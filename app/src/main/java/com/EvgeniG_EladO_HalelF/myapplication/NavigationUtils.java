@@ -10,13 +10,7 @@ public class NavigationUtils {
         BottomNavigationView nav = activity.findViewById(R.id.bottom_navigation);
 
         // Highlight the current tab
-        if (activity instanceof MainActivity) {
-            nav.setSelectedItemId(R.id.nav_home);
-        } else if (activity instanceof NavigationActivity) {
-            nav.setSelectedItemId(R.id.nav_map);
-        } else if (activity instanceof SettingsActivity) {
-            nav.setSelectedItemId(R.id.nav_settings);
-        }
+        highlightTab(activity, nav);
 
         nav.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
@@ -25,6 +19,7 @@ public class NavigationUtils {
             if (itemId == R.id.nav_map && activity instanceof NavigationActivity) return true;
             if (itemId == R.id.nav_home && activity instanceof MainActivity) return true;
             if (itemId == R.id.nav_settings && activity instanceof SettingsActivity) return true;
+
 
             if (itemId == R.id.nav_map) {
                 intent = new Intent(activity, NavigationActivity.class);
@@ -42,5 +37,17 @@ public class NavigationUtils {
             return true;
         });
     }
+
+    public static void highlightTab(Activity activity, BottomNavigationView nav) {
+        if (activity instanceof MainActivity) {
+            nav.setSelectedItemId(R.id.nav_home);
+        } else if (activity instanceof NavigationActivity) {
+            nav.setSelectedItemId(R.id.nav_map);
+        } else if (activity instanceof SettingsActivity) {
+            nav.setSelectedItemId(R.id.nav_settings);
+        }
+    }
+
+
 }
 

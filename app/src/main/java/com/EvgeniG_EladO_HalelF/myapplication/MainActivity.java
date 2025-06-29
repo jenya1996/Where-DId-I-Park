@@ -21,6 +21,7 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
@@ -43,7 +44,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends BaseActivity  {
 
     private FusedLocationProviderClient fusedLocationClient;
     private LocationDatabaseHelper dbHelper;
@@ -64,6 +65,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Toolbar toolbar = findViewById(R.id.my_toolbar);
+        setSupportActionBar(toolbar);
+
 
         locationSpinner = findViewById(R.id.location_spinner);
         Button saveButton = findViewById(R.id.save_location_button);
