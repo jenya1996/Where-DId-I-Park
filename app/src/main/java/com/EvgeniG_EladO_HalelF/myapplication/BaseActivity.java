@@ -2,12 +2,10 @@ package com.EvgeniG_EladO_HalelF.myapplication;
 
 import android.content.Intent;
 import android.graphics.Color;
-import android.os.Bundle;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -59,7 +57,8 @@ public class BaseActivity extends AppCompatActivity {
                     .setTitle("Exit?")
                     .setMessage("Are you sure you want to exit?")
                     .setPositiveButton("Yes", (dialog, which) -> {
-                        finishAffinity(); // Close all activities
+                        finishAffinity();
+                        System.exit(0);// Close all activities
                     })
                     .setNegativeButton("No", (dialog, which) -> {
                         dialog.dismiss(); // Close the dialog

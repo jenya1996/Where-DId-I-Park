@@ -1,7 +1,5 @@
 package com.EvgeniG_EladO_HalelF.myapplication;
 
-import static androidx.fragment.app.FragmentManager.TAG;
-
 import android.Manifest;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
@@ -10,17 +8,16 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.location.Location;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.Toast;
+import android.location.Address;
+import android.location.Geocoder;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -28,21 +25,14 @@ import androidx.core.content.ContextCompat;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.gms.maps.model.LatLng;
-import android.location.Address;
-import android.location.Geocoder;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
-
 import java.util.ArrayList;
-import java.util.List;
-
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
 
 public class MainActivity extends BaseActivity  {
 
@@ -50,16 +40,12 @@ public class MainActivity extends BaseActivity  {
     private LocationDatabaseHelper dbHelper;
     private Spinner locationSpinner;
     private List<LatLng> savedLatLngList = new ArrayList<>();
-
     private EditText noteInput;
     private List<String> savedNotesList = new ArrayList<>();
-
     private static final int LOCATION_PERMISSION_REQUEST = 100;
-
     private static final String PREFS_NAME = "AppSettings";
     private static final String NOTIFICATION_TIME_KEY = "notification_time";
     private RadioGroup navigationModeGroup;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,7 +53,6 @@ public class MainActivity extends BaseActivity  {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.my_toolbar);
         setSupportActionBar(toolbar);
-
 
         locationSpinner = findViewById(R.id.location_spinner);
         Button saveButton = findViewById(R.id.save_location_button);
@@ -110,8 +95,6 @@ public class MainActivity extends BaseActivity  {
 
 
         checkLocationPermission();
-        //this.deleteDatabase("locationDB"); // DEV ONLY: clears DB to rebuild schema
-
         saveButton.setOnClickListener(v -> saveCurrentLocation());
 
         navigateButton.setOnClickListener(v -> {
@@ -126,7 +109,6 @@ public class MainActivity extends BaseActivity  {
                 intent.putExtra("LNG", latLng.longitude);
                 intent.putExtra("MODE", mode);
                 startActivity(intent);
-
             }
         });
 
@@ -164,57 +146,7 @@ public class MainActivity extends BaseActivity  {
         }
     }
 
-//    private void saveCurrentLocation() {
-//        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-//                != PackageManager.PERMISSION_GRANTED) {
-//            Toast.makeText(this, "GPS permission not granted", Toast.LENGTH_SHORT).show();
-//            return;
-//        }
-//
-//        fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
-//            if (location != null) {
-//                Geocoder geocoder = new Geocoder(this, Locale.getDefault());
-//                try {
-//                    List<Address> addresses = geocoder.getFromLocation(
-//                            location.getLatitude(),
-//                            location.getLongitude(),
-//                            1
-//                    );
-//
-//                    String label = "Unknown Address";
-//                    if (addresses != null && !addresses.isEmpty()) {
-//                        Address addr = addresses.get(0);
-//                        label = addr.getAddressLine(0);
-//                    }
-//                    String note = noteInput.getText().toString();
-//
-//                    dbHelper.insertLocationWithLabel(
-//                            location.getLatitude(),
-//                            location.getLongitude(),
-//                            label,
-//                            note
-//                    );
-//
-////                    Log.d(TAG, "saveCurrentLocation: " + label); // debug message
-//                    Toast.makeText(this, "Location saved", Toast.LENGTH_SHORT).show();
-//                    loadRecentLocations();
-//                    SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-//
-//                    int minutesBefore = prefs.getInt(NOTIFICATION_TIME_KEY, 10); // default: 10 minutes
-//                    Log.d("ReminderReceiver", "Broadcast received!");
-//                    scheduleReminder(minutesBefore);
-//
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                    Toast.makeText(this, "Could not retrieve address", Toast.LENGTH_SHORT).show();
-//                }
-//            } else {
-//                Toast.makeText(this, "Could not get location", Toast.LENGTH_SHORT).show();
-//            }
-//        });
-//    }
-
-private void saveCurrentLocation() {
+    private void saveCurrentLocation() {
     if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
             != PackageManager.PERMISSION_GRANTED) {
         Toast.makeText(this, "GPS permission not granted", Toast.LENGTH_SHORT).show();
@@ -268,7 +200,6 @@ private void saveCurrentLocation() {
     });
 }
 
-
     private void loadRecentLocations() {
         Cursor cursor = dbHelper.getAllLocations();
         List<String> labels = new ArrayList<>();
@@ -315,6 +246,7 @@ private void saveCurrentLocation() {
             }
         });
     }
+
     private void scheduleReminder(int minutesFromNow) {
         Intent intent = new Intent(this, ReminderReceiver.class);
         intent.putExtra("title", "Where Did I Park");

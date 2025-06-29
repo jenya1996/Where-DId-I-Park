@@ -1,13 +1,11 @@
 package com.EvgeniG_EladO_HalelF.myapplication;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
-
 import android.widget.Button;
 
 import androidx.annotation.NonNull;
@@ -16,9 +14,6 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.core.content.ContextCompat;
-
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
 
 import com.google.android.gms.maps.GoogleMap.CameraPerspective;
 import com.google.android.gms.maps.model.LatLng;
@@ -29,22 +24,16 @@ import com.google.android.libraries.navigation.NavigationApi;
 import com.google.android.libraries.navigation.Navigator;
 import com.google.android.libraries.navigation.RoutingOptions;
 import com.google.android.libraries.navigation.SimulationOptions;
-import com.google.android.libraries.navigation.SupportNavigationFragment;
 import com.google.android.libraries.navigation.CustomControlPosition;
-
 import com.google.android.libraries.navigation.Waypoint;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+public class NavigationActivity extends FragmentActivity {
 
-public class NavigationActivity extends FragmentActivity implements OnMapReadyCallback {
-
-    private GoogleMap mMap;
     private static final String TAG = NavigationActivity.class.getSimpleName();
     private Navigator mNavigator;
     private SupportNavigationFragment mNavFragment;
     private RoutingOptions mRoutingOptions;
     private boolean locationPermissionGranted = true;
-    private LocationDatabaseHelper locationDB = new LocationDatabaseHelper(this);
     private Button stopButton;
     private final ActivityResultLauncher<String> locationPermissionRequest =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
@@ -79,11 +68,6 @@ public class NavigationActivity extends FragmentActivity implements OnMapReadyCa
         }
     }
 
-    @Override
-    public void onMapReady(@NonNull GoogleMap googleMap) {
-        mMap = googleMap;
-    }
-
     private void checkLocationPermissionAndInitialize() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
@@ -101,6 +85,7 @@ public class NavigationActivity extends FragmentActivity implements OnMapReadyCa
 
         NavigationApi.getNavigator(this, new NavigationApi.NavigatorListener() {
             @RequiresPermission(allOf = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION})
+
             @Override
             public void onNavigatorReady(@NonNull Navigator navigator) {
                 mNavigator = navigator;
@@ -124,7 +109,6 @@ public class NavigationActivity extends FragmentActivity implements OnMapReadyCa
                     LatLng selectedDestination = new LatLng(lat, lng);
                     navigateToPlace(selectedDestination, mRoutingOptions);
                 }
-
             }
 
             @Override
@@ -161,8 +145,6 @@ public class NavigationActivity extends FragmentActivity implements OnMapReadyCa
 
         // Add the button inside the Google UI at the bottom-right corner (adaptive)
         mNavFragment.setCustomControl(stopButtonView, CustomControlPosition.BOTTOM_END_BELOW);
-
-
     }
 
     private void navigateToPlace(LatLng location, RoutingOptions travelMode) {

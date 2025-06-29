@@ -5,15 +5,11 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.content.ContentValues;
 import android.database.Cursor;
-import android.location.Location;
-
-import com.google.android.gms.maps.model.LatLng;
 
 public class LocationDatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "locationDB";
     private static final int DATABASE_VERSION = 3;
-
     private static final String TABLE_NAME = "locations";
     private static final String COL_ID = "id";
     private static final String COL_LAT = "latitude";
@@ -47,19 +43,6 @@ public class LocationDatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
-    public void insertLocation(double lat, double lng) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put(COL_LAT, lat);
-        values.put(COL_LNG, lng);
-        db.insert(TABLE_NAME, null, values);
-        db.close();
-    }
-
-    public void insertLocation(LatLng location) {
-        insertLocation(location.latitude, location.longitude);
-    }
-
     public void insertLocationWithLabel(double lat, double lng, String label, String note) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -69,43 +52,6 @@ public class LocationDatabaseHelper extends SQLiteOpenHelper {
         values.put(COL_NOTE, note);
         db.insert(TABLE_NAME, null, values);
         db.close();
-    }
-
-    public void insertLocationWithLabelAndNote(double lat, double lng, String label, String note) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put(COL_LAT, lat);
-        values.put(COL_LNG, lng);
-        values.put(COL_LABEL, label);
-        values.put(COL_NOTE, note); // ← added note
-        db.insert(TABLE_NAME, null, values);
-        db.close();
-    }
-
-    public Location getLastLocation() {
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery(
-                "SELECT * FROM " + TABLE_NAME + " ORDER BY " + COL_ID + " DESC LIMIT 1",
-                null
-        );
-
-        Location location = null;
-        if (cursor.moveToFirst()) {
-            double lat = cursor.getDouble(cursor.getColumnIndex(COL_LAT));
-            double lng = cursor.getDouble(cursor.getColumnIndex(COL_LNG));
-            location = new Location("");
-            location.setLatitude(lat);
-            location.setLongitude(lng);
-        }
-
-        cursor.close();
-        db.close();
-        return location;
-    }
-
-    public LatLng getLastLatLng() {
-        Location loc = getLastLocation();
-        return new LatLng(loc.getLatitude(), loc.getLongitude());
     }
 
     public Cursor getAllLocations() {
