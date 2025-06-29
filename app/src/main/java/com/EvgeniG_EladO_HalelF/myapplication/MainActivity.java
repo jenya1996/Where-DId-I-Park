@@ -72,7 +72,9 @@ public class MainActivity extends BaseActivity  {
         locationSpinner = findViewById(R.id.location_spinner);
         Button saveButton = findViewById(R.id.save_location_button);
         Button navigateButton = findViewById(R.id.navigate_button);
-        dbHelper = new LocationDatabaseHelper(this);
+//        dbHelper = new LocationDatabaseHelper(this);
+        dbHelper = DatabaseProvider.get();
+
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -138,6 +140,7 @@ public class MainActivity extends BaseActivity  {
     protected void onResume() {
         super.onResume();
         updateNavigationModeFromPreferences();
+        loadRecentLocations(); // reloads spinner after deleting locations
     }
 
     private void checkLocationPermission() {

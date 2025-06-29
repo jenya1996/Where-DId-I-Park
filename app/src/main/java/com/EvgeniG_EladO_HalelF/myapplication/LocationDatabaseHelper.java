@@ -82,6 +82,11 @@ public class LocationDatabaseHelper extends SQLiteOpenHelper {
         db.close();
     }
 
+    public int deleteAllLocations() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        return db.delete("locations", null, null);
+    }
+
     public Location getLastLocation() {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery(
