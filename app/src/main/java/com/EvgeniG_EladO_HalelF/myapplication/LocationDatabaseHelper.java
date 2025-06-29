@@ -56,9 +56,7 @@ public class LocationDatabaseHelper extends SQLiteOpenHelper {
         db.close();
     }
 
-    public void insertLocation(LatLng location) {
-        insertLocation(location.latitude, location.longitude);
-    }
+
 
     public void insertLocationWithLabel(double lat, double lng, String label, String note) {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -71,42 +69,15 @@ public class LocationDatabaseHelper extends SQLiteOpenHelper {
         db.close();
     }
 
-    public void insertLocationWithLabelAndNote(double lat, double lng, String label, String note) {
+
+
+    public int deleteAllLocations() {
         SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put(COL_LAT, lat);
-        values.put(COL_LNG, lng);
-        values.put(COL_LABEL, label);
-        values.put(COL_NOTE, note); // ← added note
-        db.insert(TABLE_NAME, null, values);
-        db.close();
+        return db.delete("locations", null, null);
     }
 
-    public Location getLastLocation() {
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery(
-                "SELECT * FROM " + TABLE_NAME + " ORDER BY " + COL_ID + " DESC LIMIT 1",
-                null
-        );
 
-        Location location = null;
-        if (cursor.moveToFirst()) {
-            double lat = cursor.getDouble(cursor.getColumnIndex(COL_LAT));
-            double lng = cursor.getDouble(cursor.getColumnIndex(COL_LNG));
-            location = new Location("");
-            location.setLatitude(lat);
-            location.setLongitude(lng);
-        }
 
-        cursor.close();
-        db.close();
-        return location;
-    }
-
-    public LatLng getLastLatLng() {
-        Location loc = getLastLocation();
-        return new LatLng(loc.getLatitude(), loc.getLongitude());
-    }
 
     public Cursor getAllLocations() {
         SQLiteDatabase db = this.getReadableDatabase();

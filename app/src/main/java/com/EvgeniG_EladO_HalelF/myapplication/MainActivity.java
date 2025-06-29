@@ -1,7 +1,5 @@
 package com.EvgeniG_EladO_HalelF.myapplication;
 
-import static androidx.fragment.app.FragmentManager.TAG;
-
 import android.Manifest;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
@@ -10,65 +8,75 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.location.Location;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.Toast;
+import android.location.Address;
+import android.location.Geocoder;
 
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.gms.maps.model.LatLng;
-import android.location.Address;
-import android.location.Geocoder;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
-
 import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends BaseActivity  {
 
     private FusedLocationProviderClient fusedLocationClient;
     private LocationDatabaseHelper dbHelper;
     private Spinner locationSpinner;
     private List<LatLng> savedLatLngList = new ArrayList<>();
-
     private EditText noteInput;
     private List<String> savedNotesList = new ArrayList<>();
-
     private static final int LOCATION_PERMISSION_REQUEST = 100;
-
     private static final String PREFS_NAME = "AppSettings";
     private static final String NOTIFICATION_TIME_KEY = "notification_time";
-
+    private RadioGroup navigationModeGroup;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Toolbar toolbar = findViewById(R.id.my_toolbar);
+        setSupportActionBar(toolbar);
 
         locationSpinner = findViewById(R.id.location_spinner);
         Button saveButton = findViewById(R.id.save_location_button);
         Button navigateButton = findViewById(R.id.navigate_button);
-        dbHelper = new LocationDatabaseHelper(this);
+//        dbHelper = new LocationDatabaseHelper(this);
+        dbHelper = DatabaseProvider.get();
+
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map_fragment);
 
         noteInput = findViewById(R.id.note_input);
+
+        navigationModeGroup = findViewById(R.id.navigation_mode_group_main);
+
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        String defaultMode = prefs.getString("navigation_mode", "walking");
+
+        if ("driving".equals(defaultMode)) {
+            navigationModeGroup.check(R.id.driving_mode_main);
+        } else {
+            navigationModeGroup.check(R.id.walking_mode_main);
+        }
 
         if (mapFragment != null) {
             mapFragment.getMapAsync(googleMap -> {
@@ -89,42 +97,40 @@ public class MainActivity extends AppCompatActivity {
 
 
         checkLocationPermission();
-        //this.deleteDatabase("locationDB"); // DEV ONLY: clears DB to rebuild schema
-
         saveButton.setOnClickListener(v -> saveCurrentLocation());
 
         navigateButton.setOnClickListener(v -> {
             int selected = locationSpinner.getSelectedItemPosition();
             if (selected >= 0 && selected < savedLatLngList.size()) {
                 LatLng latLng = savedLatLngList.get(selected);
+                int selectedModeId = navigationModeGroup.getCheckedRadioButtonId();
+                String mode = (selectedModeId == R.id.driving_mode_main) ? "driving" : "walking";
+
                 Intent intent = new Intent(this, NavigationActivity.class);
                 intent.putExtra("LAT", latLng.latitude);
                 intent.putExtra("LNG", latLng.longitude);
+                intent.putExtra("MODE", mode);
                 startActivity(intent);
             }
         });
 
-        BottomNavigationView nav = findViewById(R.id.bottom_navigation);
-        nav.setSelectedItemId(R.id.nav_home);
-        nav.setOnItemSelectedListener(item -> {
-            int itemId = item.getItemId();
-            if (itemId == R.id.nav_home) {
-                return true; // Already on this screen
-            } else if (itemId == R.id.nav_map) {
-                startActivity(new Intent(this, NavigationActivity.class));
-                overridePendingTransition(0, 0);
-                return true;
-            } else if (itemId == R.id.nav_settings) {
-                startActivity(new Intent(this, SettingsActivity.class));
-                overridePendingTransition(0, 0);
-                return true;
-            }
-            return false;
+        // Setup Bottom Navigation
+        NavigationUtils.setupBottomNavBar(this);
 
-        });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        updateNavigationModeFromPreferences();
+        loadRecentLocations(); // reloads spinner after deleting locations
+        NavigationUtils.setupBottomNavBar(this);
+
+
     }
 
     private void checkLocationPermission() {
+
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
@@ -148,100 +154,59 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-//    private void saveCurrentLocation() {
-//        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-//                != PackageManager.PERMISSION_GRANTED) {
-//            Toast.makeText(this, "GPS permission not granted", Toast.LENGTH_SHORT).show();
-//            return;
-//        }
-//
-//        fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
-//            if (location != null) {
-//                dbHelper.insertLocation(location.getLatitude(), location.getLongitude());
-//                Toast.makeText(this, "Location saved", Toast.LENGTH_SHORT).show();
-//                loadRecentLocations();
-//            } else {
-//                Toast.makeText(this, "Could not get location", Toast.LENGTH_SHORT).show();
-//            }
-//        });
-//
-//        Geocoder geocoder = new Geocoder(this, Locale.getDefault());
-//        try {
-//            List<Address> addresses = geocoder.getFromLocation(
-//                    location.getLatitude(),
-//                    location.getLongitude(),
-//                    1
-//            );
-//
-//            String label = "Unknown Location";
-//            if (addresses != null && !addresses.isEmpty()) {
-//                Address addr = addresses.get(0);
-//                label = addr.getFeatureName(); // or addr.getAddressLine(0)
-//            }
-//
-//            // Save to DB with label
-//            dbHelper.insertLocationWithLabel(location.getLatitude(), location.getLongitude(), label);
-//
-//            Toast.makeText(this, "Location saved", Toast.LENGTH_SHORT).show();
-//            loadRecentLocations();
-//
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//            Toast.makeText(this, "Could not retrieve address", Toast.LENGTH_SHORT).show();
-//        }
-//
-//    }
-
     private void saveCurrentLocation() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(this, "GPS permission not granted", Toast.LENGTH_SHORT).show();
-            return;
-        }
+    if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+            != PackageManager.PERMISSION_GRANTED) {
+        Toast.makeText(this, "GPS permission not granted", Toast.LENGTH_SHORT).show();
+        return;
+    }
 
-        fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
-            if (location != null) {
+    fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
+        if (location != null) {
+            ExecutorService executor = Executors.newSingleThreadExecutor();
+            executor.execute(() -> {
                 Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+                String label = "Unknown Address";
+
                 try {
                     List<Address> addresses = geocoder.getFromLocation(
                             location.getLatitude(),
                             location.getLongitude(),
                             1
                     );
-
-                    String label = "Unknown Address";
                     if (addresses != null && !addresses.isEmpty()) {
                         Address addr = addresses.get(0);
                         label = addr.getAddressLine(0);
                     }
-                    String note = noteInput.getText().toString();
-
-                    dbHelper.insertLocationWithLabel(
-                            location.getLatitude(),
-                            location.getLongitude(),
-                            label,
-                            note
-                    );
-
-//                    Log.d(TAG, "saveCurrentLocation: " + label); // debug message
-                    Toast.makeText(this, "Location saved", Toast.LENGTH_SHORT).show();
-                    loadRecentLocations();
-                    SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-
-                    int minutesBefore = prefs.getInt(NOTIFICATION_TIME_KEY, 10); // default: 10 minutes
-                    Log.d("ReminderReceiver", "Broadcast received!");
-                    scheduleReminder(minutesBefore);
-
                 } catch (IOException e) {
                     e.printStackTrace();
-                    Toast.makeText(this, "Could not retrieve address", Toast.LENGTH_SHORT).show();
                 }
-            } else {
-                Toast.makeText(this, "Could not get location", Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
 
+                String note = noteInput.getText().toString();
+
+                dbHelper.insertLocationWithLabel(
+                        location.getLatitude(),
+                        location.getLongitude(),
+                        label,
+                        note
+                );
+
+                SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+                int minutesBefore = prefs.getInt(NOTIFICATION_TIME_KEY, 10);
+                scheduleReminder(minutesBefore);
+
+                runOnUiThread(() -> {
+                    Toast.makeText(this, "Location saved", Toast.LENGTH_SHORT).show();
+                    loadRecentLocations();
+                });
+
+                executor.shutdown(); // Cleanly shuts down the thread after task is complete
+            });
+        } else {
+            Toast.makeText(this, "Could not get location", Toast.LENGTH_SHORT).show();
+        }
+    });
+}
 
     private void loadRecentLocations() {
         Cursor cursor = dbHelper.getAllLocations();
@@ -289,6 +254,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
     private void scheduleReminder(int minutesFromNow) {
         Intent intent = new Intent(this, ReminderReceiver.class);
         intent.putExtra("title", "Where Did I Park");
@@ -307,5 +273,15 @@ public class MainActivity extends AppCompatActivity {
         alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent);
     }
 
+    private void updateNavigationModeFromPreferences() {
+        SharedPreferences prefs = getSharedPreferences("AppSettings", MODE_PRIVATE);
+        String navMode = prefs.getString("navigation_mode", "walking");
+
+        if ("walking".equals(navMode)) {
+            navigationModeGroup.check(R.id.walking_mode_main); // or mode_walking depending on your ID
+        } else {
+            navigationModeGroup.check(R.id.driving_mode_main); // or mode_driving
+        }
+    }
 
 }

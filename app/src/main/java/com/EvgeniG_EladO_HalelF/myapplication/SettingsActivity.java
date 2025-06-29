@@ -22,6 +22,8 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.EvgeniG_EladO_HalelF.myapplication.DatabaseProvider;
+import com.EvgeniG_EladO_HalelF.myapplication.LocationDatabaseHelper;
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -102,6 +104,28 @@ public class SettingsActivity extends AppCompatActivity {
 
         });
 
+        Button deleteLocationsButton = findViewById(R.id.delete_locations_button);
+
+        deleteLocationsButton.setOnClickListener(view -> {
+            new androidx.appcompat.app.AlertDialog.Builder(this)
+                    .setTitle("Confirm Deletion")
+                    .setMessage("Are you sure you want to delete all saved locations?")
+                    .setPositiveButton("Yes", (dialog, which) -> {
+                        LocationDatabaseHelper dbHelper = DatabaseProvider.get();
+                        int rowsDeleted = dbHelper.deleteAllLocations();
+
+                        if (rowsDeleted > 0) {
+                            Toast.makeText(this, "All saved locations deleted", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(this, "No locations to delete", Toast.LENGTH_SHORT).show();
+                        }
+                    })
+                    .setNegativeButton("Cancel", (dialog, which) -> {
+                        dialog.dismiss(); // closes the dialog
+                    })
+                    .show();
+        });
+
         ringtonePickerLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
@@ -116,20 +140,15 @@ public class SettingsActivity extends AppCompatActivity {
                     }
                 });
 
-        BottomNavigationView nav = findViewById(R.id.bottom_navigation);
-        nav.setSelectedItemId(R.id.nav_settings);
-        nav.setOnItemSelectedListener(item -> {
-            if (item.getItemId() == R.id.nav_home) {
-                startActivity(new Intent(this, MainActivity.class));
-                overridePendingTransition(0, 0);
-                return true;
-            } else if (item.getItemId() == R.id.nav_map) {
-                startActivity(new Intent(this, NavigationActivity.class));
-                overridePendingTransition(0, 0);
-                return true;
-            }
-            return false;
-        });
+        // Setup Bottom Navigation
+        NavigationUtils.setupBottomNavBar(this);
+    }
+    protected void onResume() {
+        super.onResume();
+
+        NavigationUtils.setupBottomNavBar(this);
+
+
     }
 
     private void updateSoundTitle() {

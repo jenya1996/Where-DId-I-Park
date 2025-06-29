@@ -1,12 +1,12 @@
 package com.EvgeniG_EladO_HalelF.myapplication;
 
-import android.content.Intent;
 import android.os.Bundle;
-import android.graphics.Color;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
+import android.widget.Button;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresPermission;
@@ -15,41 +15,26 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.core.content.ContextCompat;
 
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
-
 import com.google.android.gms.maps.GoogleMap.CameraPerspective;
 import com.google.android.gms.maps.model.LatLng;
 
+import com.google.android.libraries.navigation.SupportNavigationFragment;
 import com.google.android.libraries.navigation.ListenableResultFuture;
 import com.google.android.libraries.navigation.NavigationApi;
 import com.google.android.libraries.navigation.Navigator;
 import com.google.android.libraries.navigation.RoutingOptions;
 import com.google.android.libraries.navigation.SimulationOptions;
-import com.google.android.libraries.navigation.SupportNavigationFragment;
+import com.google.android.libraries.navigation.CustomControlPosition;
 import com.google.android.libraries.navigation.Waypoint;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-import org.json.JSONObject;
+public class NavigationActivity extends FragmentActivity {
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.List;
-
-public class NavigationActivity extends FragmentActivity implements OnMapReadyCallback {
-
-    private GoogleMap mMap;
-    private static final String TAG = MainActivity.class.getSimpleName();
+    private static final String TAG = NavigationActivity.class.getSimpleName();
     private Navigator mNavigator;
     private SupportNavigationFragment mNavFragment;
     private RoutingOptions mRoutingOptions;
     private boolean locationPermissionGranted = true;
-
-    private LatLng jerusalem = new LatLng(31.7683, 35.2137);
-    private LatLng telAviv = new LatLng(32.0853, 34.7818);
-    private LocationDatabaseHelper locationDB = new LocationDatabaseHelper(this);
+    private Button stopButton;
     private final ActivityResultLauncher<String> locationPermissionRequest =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
                 locationPermissionGranted = isGranted;
@@ -60,64 +45,33 @@ public class NavigationActivity extends FragmentActivity implements OnMapReadyCa
                 }
             });
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigation);
 
-
-
-
         //this the is where the navigation code starts
         checkLocationPermissionAndInitialize();
-        BottomNavigationView nav = findViewById(R.id.bottom_navigation);
-        nav.setSelectedItemId(R.id.nav_map); // Mark current tab as selected
-
-        nav.setOnItemSelectedListener(item -> {
-            int itemId = item.getItemId();
-            if (itemId == R.id.nav_home) {
-                startActivity(new Intent(this, MainActivity.class));
-                overridePendingTransition(0, 0);
-                return true; // Already here
-            } else if (itemId == R.id.nav_map) {
-
-                return true;
-            } else if (itemId == R.id.nav_settings) {
-                startActivity(new Intent(this, SettingsActivity.class));
-                overridePendingTransition(0, 0);
-                return true;
-            }
-            return false;
-        });
-
-
-
-//        BottomNavigationView nav = findViewById(R.id.bottom_navigation);
-//        nav.setSelectedItemId(R.id.nav_map);
-//        nav.setOnItemSelectedListener(item -> {
-//            int itemId = item.getItemId();
-//            if (itemId == R.id.nav_home) {
-//                startActivity(new Intent(this, MainActivity.class));
-//                overridePendingTransition(0, 0);
-//                return true;
-//            } else if (itemId == R.id.nav_map) {
-//                return true; // Already on this screen
-//            } else if (itemId == R.id.nav_settings) {
-//                startActivity(new Intent(this, SettingsActivity.class));
-//                overridePendingTransition(0, 0);
-//                return true;
-//            }
-//            return false;
-//
-//        });
+        // Setup Bottom Navigation
+        NavigationUtils.setupBottomNavBar(this);
+    }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        NavigationUtils.setupBottomNavBar(this);
     }
 
+
     @Override
-    public void onMapReady(@NonNull GoogleMap googleMap) {
-        mMap = googleMap;
-//        createRoute(jerusalem, telAviv);
+    protected void onDestroy(){
+        super.onDestroy();
+        if (mNavigator != null) {
+            mNavigator.stopGuidance();     // Stops voice + route
+            mNavigator.clearDestinations();
+            mNavigator.cleanup();
+            mNavigator = null;
+            stopButton.setVisibility(View.GONE);
+        }
     }
 
     private void checkLocationPermissionAndInitialize() {
@@ -137,26 +91,30 @@ public class NavigationActivity extends FragmentActivity implements OnMapReadyCa
 
         NavigationApi.getNavigator(this, new NavigationApi.NavigatorListener() {
             @RequiresPermission(allOf = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION})
+
             @Override
             public void onNavigatorReady(@NonNull Navigator navigator) {
-                displayMessage("Navigator ready.");
                 mNavigator = navigator;
 
                 mNavFragment.getMapAsync(googleMap ->
                         googleMap.followMyLocation(CameraPerspective.TILTED));
 
                 mRoutingOptions = new RoutingOptions();
-                mRoutingOptions.travelMode(RoutingOptions.TravelMode.DRIVING);
 
-//                locationDB.insertLocation(11.2222, 33.4444);
-//                locationDB.insertLocation(telAviv);
-//                LatLng placeToNav = locationDB.getLastLatLng();
+                String mode = getIntent().getStringExtra("MODE");
+                if ("walking".equals(mode)) {
+                    mRoutingOptions.travelMode(RoutingOptions.TravelMode.WALKING);
+                } else {
+                    mRoutingOptions.travelMode(RoutingOptions.TravelMode.DRIVING);
+                }
 
-                double lat = getIntent().getDoubleExtra("LAT", 32.0853);
-                double lng = getIntent().getDoubleExtra("LNG", 34.7818);
-                LatLng selectedDestination = new LatLng(lat, lng);
-                navigateToPlace(selectedDestination, mRoutingOptions);
 
+                double lat = getIntent().getDoubleExtra("LAT", 0);
+                double lng = getIntent().getDoubleExtra("LNG", 0);
+                if(lat != 0){
+                    LatLng selectedDestination = new LatLng(lat, lng);
+                    navigateToPlace(selectedDestination, mRoutingOptions);
+                }
             }
 
             @Override
@@ -176,6 +134,23 @@ public class NavigationActivity extends FragmentActivity implements OnMapReadyCa
                 }
             }
         });
+
+        View stopButtonView = getLayoutInflater().inflate(R.layout.view_stop_button, null);
+        stopButton = stopButtonView.findViewById(R.id.btn_stop_guidance);
+
+        stopButton.setOnClickListener(v -> {
+            if (mNavigator != null) {
+                mNavigator.stopGuidance();
+                mNavigator.clearDestinations();
+                mNavigator.cleanup();
+                stopButton.setVisibility(View.GONE);
+            }
+            displayMessage("Navigation stopped.");
+            finish();
+        });
+
+        // Add the button inside the Google UI at the bottom-right corner (adaptive)
+        mNavFragment.setCustomControl(stopButtonView, CustomControlPosition.BOTTOM_END_BELOW);
     }
 
     private void navigateToPlace(LatLng location, RoutingOptions travelMode) {
@@ -184,7 +159,7 @@ public class NavigationActivity extends FragmentActivity implements OnMapReadyCa
             destination = Waypoint.builder().setLatLng(location.latitude, location.longitude).build();
 
         } catch (IllegalArgumentException e) {
-            displayMessage("Invalid LatLng");
+            displayMessage("Invalid Location");
             return;
         }
 
@@ -199,6 +174,9 @@ public class NavigationActivity extends FragmentActivity implements OnMapReadyCa
                         getActionBar().hide();
                     }
                     mNavigator.setAudioGuidance(Navigator.AudioGuidance.VOICE_ALERTS_AND_GUIDANCE);
+                    stopButton.setVisibility(View.VISIBLE);
+
+
                     if (BuildConfig.DEBUG) {
                         mNavigator.getSimulator().simulateLocationsAlongExistingRoute(
                                 new SimulationOptions().speedMultiplier(5));
