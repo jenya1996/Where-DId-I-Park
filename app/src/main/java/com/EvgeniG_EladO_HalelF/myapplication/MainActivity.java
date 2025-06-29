@@ -116,6 +116,7 @@ public class MainActivity extends BaseActivity  {
 
         // Setup Bottom Navigation
         NavigationUtils.setupBottomNavBar(this);
+
     }
 
     @Override
@@ -123,9 +124,13 @@ public class MainActivity extends BaseActivity  {
         super.onResume();
         updateNavigationModeFromPreferences();
         loadRecentLocations(); // reloads spinner after deleting locations
+        NavigationUtils.setupBottomNavBar(this);
+
+
     }
 
     private void checkLocationPermission() {
+
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,

@@ -5,11 +5,15 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.content.ContentValues;
 import android.database.Cursor;
+import android.location.Location;
+
+import com.google.android.gms.maps.model.LatLng;
 
 public class LocationDatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "locationDB";
     private static final int DATABASE_VERSION = 3;
+
     private static final String TABLE_NAME = "locations";
     private static final String COL_ID = "id";
     private static final String COL_LAT = "latitude";
@@ -43,6 +47,17 @@ public class LocationDatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
+    public void insertLocation(double lat, double lng) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COL_LAT, lat);
+        values.put(COL_LNG, lng);
+        db.insert(TABLE_NAME, null, values);
+        db.close();
+    }
+
+
+
     public void insertLocationWithLabel(double lat, double lng, String label, String note) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -53,6 +68,16 @@ public class LocationDatabaseHelper extends SQLiteOpenHelper {
         db.insert(TABLE_NAME, null, values);
         db.close();
     }
+
+
+
+    public int deleteAllLocations() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        return db.delete("locations", null, null);
+    }
+
+
+
 
     public Cursor getAllLocations() {
         SQLiteDatabase db = this.getReadableDatabase();

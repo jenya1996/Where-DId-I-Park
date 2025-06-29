@@ -1,7 +1,8 @@
 <resources>
-    <!-- Nav Bar Icons Size -->
+    <!-- Nav Bar Icons Size + Preserve Colors -->
     <style name="BottomNavStyle" parent="Widget.MaterialComponents.BottomNavigationView">
         <item name="itemIconSize">100dp</item>
+        <item name="itemIconTint">@color/selector_nav_color</item>
+        <item name="itemTextColor">@color/selector_nav_color</item>
     </style>
-
 </resources>

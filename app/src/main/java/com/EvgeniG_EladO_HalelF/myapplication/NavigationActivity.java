@@ -55,6 +55,12 @@ public class NavigationActivity extends FragmentActivity {
         // Setup Bottom Navigation
         NavigationUtils.setupBottomNavBar(this);
     }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        NavigationUtils.setupBottomNavBar(this);
+    }
+
 
     @Override
     protected void onDestroy(){

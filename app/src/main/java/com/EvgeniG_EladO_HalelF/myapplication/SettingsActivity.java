@@ -143,6 +143,13 @@ public class SettingsActivity extends AppCompatActivity {
         // Setup Bottom Navigation
         NavigationUtils.setupBottomNavBar(this);
     }
+    protected void onResume() {
+        super.onResume();
+
+        NavigationUtils.setupBottomNavBar(this);
+
+
+    }
 
     private void updateSoundTitle() {
         if (selectedRingtoneUri != null) {

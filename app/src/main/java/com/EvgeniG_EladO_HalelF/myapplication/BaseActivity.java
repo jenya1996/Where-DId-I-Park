@@ -42,7 +42,7 @@ public class BaseActivity extends AppCompatActivity {
                     appId + "\n" +
                     fullVersion +
                     "Submit Date: 29.06.25\n" +
-                    "Elad Ozery\nEvgeni Glushko\n Halel Fruman";
+                    "Elad Ozery\nEvgeni Glushko\nHalel Fruman";
 
             new AlertDialog.Builder(this)
                     .setTitle("About")
