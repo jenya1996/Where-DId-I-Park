@@ -99,7 +99,18 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
                 android:text="Save Settings" />
+
+            <Button
+                android:id="@+id/delete_locations_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="24dp"
+                android:backgroundTint="#ff0000"
+                android:text="Delete Saved Locations" />
         </LinearLayout>
+
+
     </ScrollView>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView

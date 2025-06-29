@@ -152,6 +152,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         updateNavigationModeFromPreferences();
+        loadRecentLocations(); // reloads spinner after deleting locations
     }
 
     private void checkLocationPermission() {
