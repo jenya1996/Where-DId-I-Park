@@ -9,6 +9,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class BaseActivity extends AppCompatActivity {
@@ -18,9 +19,9 @@ public class BaseActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.overflow_menu, menu);
 
         // Apply different colors
-        setMenuItemColor(menu.findItem(R.id.menu_settings), Color.RED);
+        setMenuItemColor(menu.findItem(R.id.menu_settings), Color.BLACK);
         setMenuItemColor(menu.findItem(R.id.menu_about), Color.BLUE);
-        setMenuItemColor(menu.findItem(R.id.menu_exit), Color.BLACK); // green
+        setMenuItemColor(menu.findItem(R.id.menu_exit), Color.RED);
 
         return true;
     }
@@ -33,10 +34,37 @@ public class BaseActivity extends AppCompatActivity {
             startActivity(new Intent(this, SettingsActivity.class));
             return true;
         } else if (id == R.id.menu_about) {
-            Toast.makeText(this, "WhereDidIPark v1.0", Toast.LENGTH_SHORT).show();
+            String release = android.os.Build.VERSION.RELEASE;
+            int sdkVersion = android.os.Build.VERSION.SDK_INT;
+            String appId = getApplicationContext().getPackageName();
+
+            String fullVersion = "Android version: " + release + " (SDK " + sdkVersion + ")\n";
+
+            String aboutStr = "Where Did I Park?\n" +
+                    appId + "\n" +
+                    fullVersion +
+                    "Submit Date: 29.06.25\n" +
+                    "Elad Ozery\nEvgeni Glushko\n Halel Fruman";
+
+            new AlertDialog.Builder(this)
+                    .setTitle("About")
+                    .setMessage(aboutStr)
+                    .setNegativeButton("Close", (dialog, which) -> {
+                        dialog.dismiss(); // Close the dialog
+                    })
+                    .show();
             return true;
         } else if (id == R.id.menu_exit) {
-            finishAffinity(); // Exits the app
+            new AlertDialog.Builder(this)
+                    .setTitle("Exit?")
+                    .setMessage("Are you sure you want to exit?")
+                    .setPositiveButton("Yes", (dialog, which) -> {
+                        finishAffinity(); // Close all activities
+                    })
+                    .setNegativeButton("No", (dialog, which) -> {
+                        dialog.dismiss(); // Close the dialog
+                    })
+                    .show();
             return true;
         } else {
             return super.onOptionsItemSelected(item);
