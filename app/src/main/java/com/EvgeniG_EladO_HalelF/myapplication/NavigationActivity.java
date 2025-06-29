@@ -5,7 +5,10 @@ import android.os.Bundle;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
+
+import android.widget.Button;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresPermission;
@@ -20,12 +23,15 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.GoogleMap.CameraPerspective;
 import com.google.android.gms.maps.model.LatLng;
 
+import com.google.android.libraries.navigation.SupportNavigationFragment;
 import com.google.android.libraries.navigation.ListenableResultFuture;
 import com.google.android.libraries.navigation.NavigationApi;
 import com.google.android.libraries.navigation.Navigator;
 import com.google.android.libraries.navigation.RoutingOptions;
 import com.google.android.libraries.navigation.SimulationOptions;
 import com.google.android.libraries.navigation.SupportNavigationFragment;
+import com.google.android.libraries.navigation.CustomControlPosition;
+
 import com.google.android.libraries.navigation.Waypoint;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -33,7 +39,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 public class NavigationActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
-    private static final String TAG = MainActivity.class.getSimpleName();
+    private static final String TAG = NavigationActivity.class.getSimpleName();
     private Navigator mNavigator;
     private SupportNavigationFragment mNavFragment;
     private RoutingOptions mRoutingOptions;
@@ -136,6 +142,24 @@ public class NavigationActivity extends FragmentActivity implements OnMapReadyCa
                 }
             }
         });
+
+        View stopButtonView = getLayoutInflater().inflate(R.layout.view_stop_button, null);
+        Button stopButton = stopButtonView.findViewById(R.id.btn_stop_guidance);
+
+        stopButton.setOnClickListener(v -> {
+            if (mNavigator != null) {
+                mNavigator.stopGuidance();
+                mNavigator.clearDestinations();
+                mNavigator.cleanup();
+            }
+            displayMessage("Navigation stopped.");
+            finish();
+        });
+
+// Add the button inside the Google UI at the bottom-right corner (adaptive)
+        mNavFragment.setCustomControl(stopButtonView, CustomControlPosition.BOTTOM_END_BELOW);
+
+
     }
 
     private void navigateToPlace(LatLng location, RoutingOptions travelMode) {
@@ -159,6 +183,7 @@ public class NavigationActivity extends FragmentActivity implements OnMapReadyCa
                         getActionBar().hide();
                     }
                     mNavigator.setAudioGuidance(Navigator.AudioGuidance.VOICE_ALERTS_AND_GUIDANCE);
+
                     if (BuildConfig.DEBUG) {
                         mNavigator.getSimulator().simulateLocationsAlongExistingRoute(
                                 new SimulationOptions().speedMultiplier(5));
