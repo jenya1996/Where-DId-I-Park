@@ -13,6 +13,8 @@ public class SplashActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
+        // Initialize the database
+        DatabaseProvider.init(this);
 
         // Wait 2 seconds, then start MainActivity
         new Handler().postDelayed(() -> {

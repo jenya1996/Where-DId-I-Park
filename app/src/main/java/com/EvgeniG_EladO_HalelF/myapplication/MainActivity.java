@@ -68,7 +68,9 @@ public class MainActivity extends AppCompatActivity {
         locationSpinner = findViewById(R.id.location_spinner);
         Button saveButton = findViewById(R.id.save_location_button);
         Button navigateButton = findViewById(R.id.navigate_button);
-        dbHelper = new LocationDatabaseHelper(this);
+//        dbHelper = new LocationDatabaseHelper(this);
+        dbHelper = DatabaseProvider.get();
+
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
