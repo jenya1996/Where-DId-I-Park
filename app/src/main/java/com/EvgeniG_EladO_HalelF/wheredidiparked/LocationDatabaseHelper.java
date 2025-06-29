@@ -1,13 +1,10 @@
-package com.EvgeniG_EladO_HalelF.myapplication;
+package com.EvgeniG_EladO_HalelF.wheredidiparked;
 
 import android.database.sqlite.SQLiteOpenHelper;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.content.ContentValues;
 import android.database.Cursor;
-import android.location.Location;
-
-import com.google.android.gms.maps.model.LatLng;
 
 public class LocationDatabaseHelper extends SQLiteOpenHelper {
 
