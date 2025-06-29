@@ -1,4 +1,4 @@
-package com.EvgeniG_EladO_HalelF.myapplication;
+package com.EvgeniG_EladO_HalelF.wheredidiparked;
 
 import android.app.Activity;
 
@@ -20,10 +20,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-
-import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.EvgeniG_EladO_HalelF.myapplication.DatabaseProvider;
-import com.EvgeniG_EladO_HalelF.myapplication.LocationDatabaseHelper;
 
 public class SettingsActivity extends AppCompatActivity {
 

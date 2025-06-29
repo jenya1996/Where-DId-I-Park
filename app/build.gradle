@@ -23,11 +23,11 @@ allprojects {
 }
 
 android {
-    namespace 'com.EvgeniG_EladO_HalelF.myapplication'
+    namespace 'com.EvgeniG_EladO_HalelF.wheredidiparked'
     compileSdk 35
 
     defaultConfig {
-        applicationId "com.EvgeniG_EladO_HalelF.myapplication"
+        applicationId "com.EvgeniG_EladO_HalelF.wheredidiparked"
         minSdk 26
         targetSdk 35
         versionCode 1
